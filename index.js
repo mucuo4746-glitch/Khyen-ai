@@ -1,29 +1,16 @@
-const https = require('https');
+const http = require('http');
 
-const data = JSON.stringify({
-  model: "gpt-3.5-turbo",
-  messages: [
-    { role: "system", content: "你是一个深耕藏文化的智库专家。你的开场白必须是：‘您好，我是您的藏文化帮手。’" },
-    { role: "user", content: "请向指挥官报到。" }
-  ]
+// 1. 生命维持系统：让服务器能呼吸
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end('<h1>智库大脑运行中！指挥官，请开始你的提问。</h1>');
 });
 
-const options = {
-  hostname: 'api.openai.com',
-  port: 443,
-  path: '/v1/chat/completions',
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.KEY}` 
-  }
-};
+// 2. 智库大脑日志
+console.log("智库大脑已就绪。");
 
-const req = https.request(options, (res) => {
-  let body = '';
-  res.on('data', (d) => body += d);
-  res.on('end', () => { console.log("智库大脑已就绪。"); });
+// 3. 开启监听（这是防止服务器自杀的关键）
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`服务已启动，端口：${PORT}`);
 });
-
-req.write(data);
-req.end();
