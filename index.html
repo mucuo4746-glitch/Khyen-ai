@@ -1,338 +1,128 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Khyen མཁྱེན། AI</title>
-<div style="text-align: center; padding: 15px; background: #1a0f0a; border-bottom: 2px solid #D4A017;">
-    <a href="/chat" style="color: #F5C842; text-decoration: none; font-size: 16px; font-weight: bold; border: 1px solid #F5C842; padding: 8px 25px; border-radius: 20px; display: inline-block;">
-        进入智库对话大脑 · Enter AI Chat མཁྱེན།
-    </a>
-</div> <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{min-height:100vh;background:linear-gradient(180deg,#1a0f0a 0%,#2C1810 40%,#3d2314 100%);font-family:sans-serif;color:#F5E6C8}
-  .flags{width:100%;height:32px;display:block}
-  .mountain{width:100%;height:60px;display:block}
-  .header{text-align:center;padding:16px 20px 10px;position:relative}
-  .emblem{width:70px;height:70px;margin:0 auto 10px;border-radius:50%;background:radial-gradient(circle,#8B1A1A 0%,#2C1810 70%);border:3px solid #D4A017;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 0 20px #D4A01755}
-  .title{font-size:28px;font-weight:bold;color:#F5C842;letter-spacing:4px;text-shadow:0 0 24px #D4A017aa}
-  .subtitle-bo{font-size:15px;color:#F5C842;letter-spacing:3px;opacity:.85;margin:4px 0 2px}
-  .subtitle-zh{font-size:11px;color:#B8956A;letter-spacing:2px;margin-top:4px}
-  .border{height:8px;background:repeating-linear-gradient(90deg,#D4A017 0,#D4A017 8px,#8B1A1A 8px,#8B1A1A 16px,#1a6b3a 16px,#1a6b3a 24px,#1a4a8a 24px,#1a4a8a 32px);opacity:.7;border-radius:4px;margin:8px 0}
-  .tabs{display:flex;gap:6px;margin-bottom:18px;justify-content:center;flex-wrap:wrap;padding:0 16px}
-  .tab{padding:9px 16px;border-radius:999px;border:1px solid rgba(212,160,23,.35);cursor:pointer;font-weight:bold;font-size:12px;background:rgba(212,160,23,.15);color:#F5C842;transition:all .2s}
-  .tab.active{background:linear-gradient(90deg,#D4A017,#F5C842);color:#1a0f0a;box-shadow:0 2px 12px #D4A01755}
-  .content{padding:0 16px 20px}
-  .card{background:rgba(255,255,255,.06);border-radius:16px;padding:20px;border:1px solid rgba(212,160,23,.35);display:none}
-  .card.active{display:block}
-  .card h2{font-size:16px;color:#F5C842;margin-bottom:4px}
-  .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-  .tag{padding:6px 14px;border-radius:999px;border:1px solid rgba(212,160,23,.4);cursor:pointer;font-size:12px;background:transparent;color:#B8956A;transition:all .2s}
-  .tag.active,.tag:hover{background:rgba(212,160,23,.2);color:#F5C842}
-  textarea{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(212,160,23,.35);border-radius:10px;color:#F5E6C8;padding:12px;font-size:14px;resize:vertical;outline:none;font-family:sans-serif;min-height:100px}
-  .main-btn{width:100%;padding:13px;margin-top:10px;border-radius:10px;border:1px solid #D4A017;cursor:pointer;font-weight:bold;font-size:15px;background:linear-gradient(90deg,#D4A017,#F5C842);color:#1a0f0a;letter-spacing:1px}
-  .main-btn:disabled{background:#555;border-color:#555;color:#aaa;cursor:not-allowed}
-  .result-box{margin-top:16px;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.35);border-radius:10px;padding:16px}
-  .result-label{font-size:11px;color:#F5C842;margin-bottom:8px}
-  .result-text{font-size:14px;line-height:1.9;color:#F5E6C8;white-space:pre-wrap;margin-bottom:14px}
-  .action-row{display:flex;gap:8px;flex-wrap:wrap}
-  .action-btn{padding:6px 14px;border-radius:999px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.08);color:#F5C842;cursor:pointer;font-size:12px}
-  .festival-item{background:rgba(0,0,0,.2);border:1px solid rgba(212,160,23,.2);border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;margin-bottom:8px}
-  .festival-item.open{background:rgba(212,160,23,.12);border-color:#D4A017}
-  .festival-row{display:flex;align-items:center;gap:10px}
-  .festival-emoji{font-size:22px}
-  .festival-name{font-weight:bold;font-size:14px;color:#F5E6C8}
-  .festival-tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
-  .ftag{font-size:10px;padding:2px 8px;border-radius:999px}
-  .ftag-bo{color:#F5C842;background:rgba(212,160,23,.1)}
-  .ftag-cn{color:#B8956A;background:rgba(0,0,0,.2)}
-  .festival-arrow{color:#D4A017;font-size:12px;margin-left:auto}
-  .festival-desc{margin-top:10px;font-size:13px;line-height:1.8;color:#B8956A;border-top:1px solid rgba(212,160,23,.2);padding-top:10px;display:none}
-  .festival-item.open .festival-desc{display:block}
-  .cat-title{font-size:13px;color:#F5C842;letter-spacing:1px;margin-bottom:10px}
-  .phrase-item{background:rgba(0,0,0,.2);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;margin-bottom:8px}
-  .phrase-item.open{background:rgba(212,160,23,.12);border-color:#D4A017}
-  .phrase-bo{font-size:16px;color:#F5C842;line-height:1.8}
-  .phrase-detail{display:none;margin-top:10px;border-top:1px solid rgba(212,160,23,.2);padding-top:10px}
-  .phrase-item.open .phrase-detail{display:block}
-  .phrase-zh{font-size:14px;color:#F5E6C8;margin-bottom:6px}
-  .phrase-en{font-size:13px;color:#B8956A;font-style:italic;margin-bottom:10px}
-  .footer{text-align:center;padding:0 16px 20px}
-  .footer-mantra{font-size:12px;color:#D4A017;opacity:.6;margin-top:4px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khyen མཁྱེན། AI - 藏文化智慧空间</title>
+    <style>
+        /* 1. 基础底色：从暗沉转为通透的冰川灰白 */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa; /* 极浅的灰白色，像雪山初晴 */
+            color: #2c3e50;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+        }
+
+        /* 2. 顶部导航：保留文化符号，但做得更轻盈 */
+        .header {
+            background: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-bottom: 3px solid #d4a017;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a0f0a;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #8b956a;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* 3. 进入按钮：改为现代化的悬浮感设计 */
+        .enter-btn-wrap {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .enter-btn {
+            background: #d4a017;
+            color: white;
+            text-decoration: none;
+            padding: 15px 45px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(212, 160, 23, 0.3);
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(212, 160, 23, 0.4);
+            background: #b88a14;
+        }
+
+        /* 4. 功能卡片：现代大气的大色块布局 */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #d4a017;
+            transform: translateY(-5px);
+        }
+
+        .card h3 { color: #d4a017; margin-top: 0; }
+        .card p { color: #666; line-height: 1.6; font-size: 14px; }
+        
+        .icon { font-size: 40px; margin-bottom: 15px; display: block; }
+    </style>
 </head>
 <body>
- 
-<!-- Prayer Flags -->
-<svg class="flags" viewBox="0 0 400 32">
-  <line x1="0" y1="8" x2="400" y2="8" stroke="#D4A017" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
-  <rect x="10" y="2" width="55" height="22" fill="#D4A017" opacity="0.85" rx="2"/><text x="37" y="17" text-anchor="middle" font-size="10" fill="#fff" opacity="0.9">༄༅</text>
-  <rect x="90" y="2" width="55" height="22" fill="#C0392B" opacity="0.85" rx="2"/><text x="117" y="17" text-anchor="middle" font-size="10" fill="#fff" opacity="0.9">༄༅</text>
-  <rect x="170" y="2" width="55" height="22" fill="#2980B9" opacity="0.85" rx="2"/><text x="197" y="17" text-anchor="middle" font-size="10" fill="#fff" opacity="0.9">༄༅</text>
-  <rect x="250" y="2" width="55" height="22" fill="#27AE60" opacity="0.85" rx="2"/><text x="277" y="17" text-anchor="middle" font-size="10" fill="#fff" opacity="0.9">༄༅</text>
-  <rect x="330" y="2" width="55" height="22" fill="#8E44AD" opacity="0.85" rx="2"/><text x="357" y="17" text-anchor="middle" font-size="10" fill="#fff" opacity="0.9">༄༅</text>
-</svg>
- 
-<!-- Snow Mountains -->
-<svg class="mountain" viewBox="0 0 400 60" preserveAspectRatio="none">
-  <rect width="400" height="60" fill="#1a0f0a"/>
-  <polygon points="0,60 60,20 120,40 180,10 240,35 300,15 360,30 400,20 400,60" fill="#3d2314" opacity="0.8"/>
-  <polygon points="140,40 180,10 220,40" fill="#e8e0d0" opacity="0.6"/>
-  <polygon points="270,35 300,15 330,35" fill="#e8e0d0" opacity="0.5"/>
-</svg>
- 
-<!-- Header -->
-<div class="header">
-  <div class="emblem">🏔️</div>
-  <div class="title">Khyen མཁྱེན། AI</div>
-  <div class="subtitle-bo">༄༅། །བོད་རིག་པའི་རོགས་རམ་པ།</div>
-  <div class="border"></div>
-  <div class="subtitle-zh">藏文化 AI 助手 · Intelligence rooted in Tibetan Wisdom</div>
-</div>
- 
-<!-- Tabs -->
-<div class="tabs">
-  <button class="tab active" onclick="switchTab(0)">🔤 翻译</button>
-  <button class="tab" onclick="switchTab(1)">📚 文化科普</button>
-  <button class="tab" onclick="switchTab(2)">🗓️ 节日</button>
-  <button class="tab" onclick="switchTab(3)">📖 短句</button>
-</div>
- 
-<div class="content">
- 
-<!-- Tab 0: Translation -->
-<div class="card active" id="tab0">
-  <h2>🔤 智能翻译</h2>
-  <div class="border"></div>
-  <div class="tag-row">
-    <button class="tag active" onclick="setDir(this,'zh-bo')">中文→藏文</button>
-    <button class="tag" onclick="setDir(this,'bo-zh')">藏文→中文</button>
-    <button class="tag" onclick="setDir(this,'zh-en')">中文→英文</button>
-    <button class="tag" onclick="setDir(this,'bo-en')">藏文→英文</button>
-  </div>
-  <textarea id="transInput" placeholder="请输入要翻译的文字..."></textarea>
-  <button class="main-btn" onclick="doTranslate()">✨ 翻译</button>
-  <div class="result-box" id="transResult" style="display:none">
-    <div class="result-label">翻译结果：</div>
-    <div class="result-text" id="transText"></div>
-    <div class="action-row">
-      <button class="action-btn" onclick="copyText('transText')">📋 复制</button>
-      <button class="action-btn" onclick="speakText('transText')">🔊 朗读（中文）</button>
-      <button class="action-btn" onclick="stopSpeak()">⏹ 停止</button>
+
+    <div class="header">
+        <div class="subtitle">Intelligence Rooted in Tibetan Wisdom</div>
+        <div class="title">Khyen མཁྱེན། AI</div>
+        <div style="font-size: 18px; color: #d4a017; margin-top: 10px;">藏文化 AI 智库平台</div>
     </div>
-  </div>
-</div>
- 
-<!-- Tab 1: Culture -->
-<div class="card" id="tab1">
-  <h2>📚 藏文化科普</h2>
-  <div class="border"></div>
-  <p style="font-size:12px;color:#B8956A;margin:12px 0 8px">快速了解：</p>
-  <div class="tag-row">
-    <button class="tag" onclick="setCultureQ(this,'藏历新年（洛萨）')">藏历新年</button>
-    <button class="tag" onclick="setCultureQ(this,'藏传佛教简介')">藏传佛教</button>
-    <button class="tag" onclick="setCultureQ(this,'藏族传统服饰')">传统服饰</button>
-    <button class="tag" onclick="setCultureQ(this,'藏族饮食文化')">饮食文化</button>
-    <button class="tag" onclick="setCultureQ(this,'布达拉宫')">布达拉宫</button>
-    <button class="tag" onclick="setCultureQ(this,'藏族音乐与舞蹈')">音乐舞蹈</button>
-  </div>
-  <textarea id="cultureInput" placeholder="或者输入你想了解的藏文化问题..."></textarea>
-  <button class="main-btn" onclick="doCulture()">🏔️ 了解一下</button>
-  <div class="result-box" id="cultureResult" style="display:none">
-    <div class="result-label">科普内容：</div>
-    <div class="result-text" id="cultureText"></div>
-    <div class="action-row">
-      <button class="action-btn" onclick="copyText('cultureText')">📋 复制</button>
-      <button class="action-btn" onclick="speakText('cultureText')">🔊 朗读</button>
-      <button class="action-btn" onclick="stopSpeak()">⏹ 停止</button>
+
+    <div class="enter-btn-wrap">
+        <a href="/chat" class="enter-btn">开启智慧对话 · Start Exploration</a>
     </div>
-  </div>
-</div>
- 
-<!-- Tab 2: Festivals -->
-<div class="card" id="tab2">
-  <h2>🗓️ 藏族节日日历</h2>
-  <div class="border"></div>
-  <p style="font-size:12px;color:#B8956A;margin:12px 0 14px">点击节日了解详情 · 公历与藏历对照</p>
-  <div id="festivalList"></div>
-</div>
- 
-<!-- Tab 3: Phrases -->
-<div class="card" id="tab3">
-  <h2>📖 藏语短句手册</h2>
-  <div class="border"></div>
-  <p style="font-size:12px;color:#B8956A;margin:12px 0 16px">藏文 · 中文 · 英文三语对照 · 点击展开</p>
-  <div id="phraseList"></div>
-</div>
- 
-</div>
- 
-<div class="footer">
-  <div class="border"></div>
-  <p style="font-size:11px;color:#B8956A;letter-spacing:1px">由 Claude AI 驱动 · 藏汉文化桥梁</p>
-  <p class="footer-mantra">༄༅། །ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</p>
-</div>
- 
-<script>
-const API_KEY = "sk-R16XiXf7KtSbcoRu00F0C43f3aE74b5a8174D7D84d88B7Bf";
-let currentDir = "zh-bo";
- 
-const festivals = [
-  {day:"藏历正月初一",approx:"2月中旬",name:"洛萨（藏历新年）",emoji:"🎊",desc:"藏族最重要的传统节日，家家户户打扫房屋、穿新衣、互送祝福，庆祝活动持续15天。"},
-  {day:"藏历正月初五",approx:"2月下旬",name:"煨桑节",emoji:"🔥",desc:"人们燃烧松柏枝叶，烟雾缭绕，祈求神灵保佑，驱除邪气，迎来好运。"},
-  {day:"藏历正月十五",approx:"3月初",name:"酥油花灯节",emoji:"🕯️",desc:"寺庙和街道摆放精美酥油花，点燃灯火，纪念宗喀巴大师，场面壮观。"},
-  {day:"藏历四月十五",approx:"5月中旬",name:"萨嘎达瓦节",emoji:"☸️",desc:"纪念释迦牟尼诞生、成道、涅槃的神圣节日，信众转经、放生、布施，功德无量。"},
-  {day:"藏历五月初五",approx:"6月中旬",name:"沐浴节",emoji:"💧",desc:"藏族传统节日，人们在河边沐浴，洗去一年的晦气，祈求健康平安。"},
-  {day:"藏历六月初四",approx:"7月中旬",name:"转山节",emoji:"🏔️",desc:"信众围绕神山转经祈福，是藏区重要的宗教活动之一。"},
-  {day:"藏历六月三十",approx:"8月初",name:"雪顿节",emoji:"🎭",desc:"酸奶宴节日，拉萨哲蚌寺展佛，藏戏表演连续数日，是藏区最盛大的节日之一。"},
-  {day:"藏历七月初七",approx:"8月中旬",name:"望果节",emoji:"🌾",desc:"农业丰收祈祷节，农民绕田地游行，祈求风调雨顺、五谷丰登。"},
-  {day:"藏历九月二十二",approx:"10月下旬",name:"降神节",emoji:"⭐",desc:"纪念释迦牟尼从天界返回人间，寺庙举行盛大法会，信众点灯祈福。"},
-  {day:"藏历十月二十五",approx:"11月下旬",name:"燃灯节",emoji:"🪔",desc:"纪念宗喀巴大师圆寂，家家户户屋顶点燃酥油灯，夜晚灯火通明，美不胜收。"},
-];
- 
-const phrases = [
-  {cat:"👋 日常问候",items:[
-    {bo:"བཀྲ་ཤིས་བདེ་ལེགས།",zh:"吉祥如意！",en:"Tashi Delek!"},
-    {bo:"ཁྱེད་རང་བདེ་པོ་ཡིན་པས།",zh:"你好吗？",en:"How are you?"},
-    {bo:"ང་བདེ་པོ་ཡིན།",zh:"我很好。",en:"I am well."},
-    {bo:"ཐུགས་རྗེ་ཆེ།",zh:"谢谢！",en:"Thank you!"},
-    {bo:"གལེ་ཕེབས།",zh:"再见！（请慢走）",en:"Goodbye!"},
-  ]},
-  {cat:"🙏 祈福祝愿",items:[
-    {bo:"བདེ་སྐྱིད་ཞིང་ཐོབ་པར་ཤོག",zh:"愿你获得安乐！",en:"May you attain happiness!"},
-    {bo:"སྡུག་བསྔལ་ལས་གྲོལ་བར་ཤོག",zh:"愿你从苦中解脱！",en:"May you be free from suffering!"},
-    {bo:"ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།",zh:"唵嘛呢叭咪吽（六字真言）",en:"Om Mani Padme Hum"},
-  ]},
-  {cat:"☸️ 菩提行论经典句",items:[
-    {bo:"སེམས་ཅན་ཐམས་ཅད་བདེ་བ་དང་ལྡན་པར་གྱུར་ཅིག",zh:"愿一切众生具足安乐。",en:"May all sentient beings be endowed with happiness."},
-    {bo:"གང་གིས་འཇིག་རྟེན་མགོན་པོ་མཐའ་ཡས་པ།",zh:"我以恭敬心顶礼护佑无量世间的怙主。",en:"With devotion I bow to the protector of the infinite world."},
-    {bo:"བདག་གི་སྡིག་པ་ཐམས་ཅད་བཤགས་པར་བགྱི།",zh:"我忏悔自身一切罪业。",en:"I confess all my misdeeds."},
-    {bo:"གཞན་གྱི་སྡུག་བསྔལ་རང་ལ་ལེན་པར་བྱ།",zh:"愿我承担他人之苦。",en:"May I take upon myself the suffering of others."},
-    {bo:"ཇི་སྲིད་ནམ་མཁའི་མཐར་ཐུག་པ། །སེམས་ཅན་གནས་པར་གྱུར་པར་ཤོག",zh:"只要虚空存在，只要众生存在，愿我也存在，以消除世间苦难。",en:"For as long as space endures and sentient beings remain, may I too abide to dispel the misery of the world."},
-  ]},
-];
- 
-// Build festivals
-const fl = document.getElementById('festivalList');
-festivals.forEach((f,i) => {
-  fl.innerHTML += `<div class="festival-item" onclick="toggleFestival(${i})" id="fi${i}">
-    <div class="festival-row">
-      <span class="festival-emoji">${f.emoji}</span>
-      <div style="flex:1">
-        <div class="festival-name">${f.name}</div>
-        <div class="festival-tags">
-          <span class="ftag ftag-bo">藏历 ${f.day}</span>
-          <span class="ftag ftag-cn">公历约 ${f.approx}</span>
+
+    <div class="container">
+        <div class="card">
+            <span class="icon">🏮</span>
+            <h3>文化百科</h3>
+            <p>探索唐卡艺术、藏医药学及深邃的哲学思想。</p>
         </div>
-      </div>
-      <span class="festival-arrow" id="fa${i}">▼</span>
-    </div>
-    <div class="festival-desc" id="fd${i}">${f.desc}</div>
-  </div>`;
-});
- 
-// Build phrases
-const pl = document.getElementById('phraseList');
-phrases.forEach((cat,ci) => {
-  let html = `<div class="cat-title">${cat.cat}</div>`;
-  cat.items.forEach((p,pi) => {
-    const key = `${ci}_${pi}`;
-    html += `<div class="phrase-item" onclick="togglePhrase('${key}')" id="ph${key}">
-      <div class="phrase-bo">${p.bo}</div>
-      <div class="phrase-detail" id="pd${key}">
-        <div class="phrase-zh">🇨🇳 ${p.zh}</div>
-        <div class="phrase-en">🇬🇧 ${p.en}</div>
-        <div class="action-row">
-          <button class="action-btn" onclick="event.stopPropagation();navigator.clipboard.writeText('${p.bo}\\n${p.zh}\\n${p.en}')">📋 复制</button>
-          <button class="action-btn" onclick="event.stopPropagation();speakStr('${p.zh}')">🔊 朗读中文</button>
+        <div class="card">
+            <span class="icon">📜</span>
+            <h3>文献转译</h3>
+            <p>基于深度学习的汉藏翻译与古籍解读助手。</p>
         </div>
-      </div>
-    </div>`;
-  });
-  pl.innerHTML += `<div style="margin-bottom:20px">${html}</div>`;
-});
- 
-function switchTab(i) {
-  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
-  document.querySelectorAll('.card').forEach((c,j) => c.classList.toggle('active', i===j));
-}
- 
-function setDir(el, dir) {
-  currentDir = dir;
-  document.querySelectorAll('#tab0 .tag').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-}
- 
-function setCultureQ(el, q) {
-  document.getElementById('cultureInput').value = q;
-  document.querySelectorAll('#tab1 .tag').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  doCulture();
-}
- 
-function toggleFestival(i) {
-  const el = document.getElementById('fi'+i);
-  const arrow = document.getElementById('fa'+i);
-  el.classList.toggle('open');
-  arrow.textContent = el.classList.contains('open') ? '▲' : '▼';
-}
- 
-function togglePhrase(key) {
-  document.getElementById('ph'+key).classList.toggle('open');
-}
- 
-async function callClaude(prompt) {
-  const btn = event?.target;
-  if(btn) { btn.disabled=true; btn.textContent='⏳ 处理中...'; }
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data = await res.json();
-    return data.content?.[0]?.text || '出错了，请重试。';
-  } catch(e) { return '网络错误，请重试。'; }
-  finally { if(btn) { btn.disabled=false; btn.textContent=btn.id==='transBtn'?'✨ 翻译':'🏔️ 了解一下'; } }
-}
- 
-async function doTranslate() {
-  const input = document.getElementById('transInput').value.trim();
-  if(!input) return;
-  const langMap = {'zh-bo':['中文','藏文（藏语）'],'bo-zh':['藏文','中文'],'zh-en':['中文','英文'],'bo-en':['藏文','英文']};
-  const [from,to] = langMap[currentDir];
-  const result = await callClaude(`请将以下${from}翻译成${to}，只输出翻译结果，不要解释：\n\n${input}`);
-  document.getElementById('transText').textContent = result;
-  document.getElementById('transResult').style.display = 'block';
-}
- 
-async function doCulture() {
-  const input = document.getElementById('cultureInput').value.trim();
-  if(!input) return;
-  const result = await callClaude(`你是一位专业的藏族文化学者，请用简洁易懂的中文介绍以下藏文化相关问题，内容要准确、有趣、有深度：\n\n${input}`);
-  document.getElementById('cultureText').textContent = result;
-  document.getElementById('cultureResult').style.display = 'block';
-}
- 
-function copyText(id) {
-  navigator.clipboard.writeText(document.getElementById(id).textContent);
-}
- 
-function speakText(id) {
-  speakStr(document.getElementById(id).textContent);
-}
- 
-function speakStr(text) {
-  if(!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN';
-  window.speechSynthesis.speak(u);
-}
- 
-function stopSpeak() {
-  window.speechSynthesis?.cancel();
-}
-</script>
+        <div class="card">
+            <span class="icon">🏔️</span>
+            <h3>圣境导引</h3>
+            <p>为您规划富有灵魂的雪域高原文化之旅。</p>
+        </div>
+    </div>
+
 </body>
 </html>
