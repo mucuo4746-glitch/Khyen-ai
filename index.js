@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => {
             else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(content); }
         });
     } 
-    // 2. 对话界面路由 - 雪山之光版
+    // 2. 对话界面路由 - 增加语音功能版
     else if (req.url === '/chat') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`
@@ -28,12 +28,18 @@ const server = http.createServer((req, res) => {
                     .message { padding: 14px 20px; border-radius: 18px; max-width: 80%; line-height: 1.6; font-size: 15px; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.03); }
                     .user { align-self: flex-end; background: #1a0f0a; color: #f5c842; border-bottom-right-radius: 2px; }
                     .ai { align-self: flex-start; background: white; border: 1px solid #eee; border-left: 4px solid #d4a017; border-bottom-left-radius: 2px; }
+                    
+                    /* 语音按钮样式 */
+                    .speak-btn { 
+                        display: block; margin-top: 8px; font-size: 12px; color: #d4a017; cursor: pointer; 
+                        border: 1px solid #d4a017; border-radius: 12px; padding: 2px 8px; width: fit-content;
+                        transition: 0.3s;
+                    }
+                    .speak-btn:hover { background: #d4a017; color: white; }
+
                     .input-area { padding: 15px 25px; background: white; display: flex; gap: 12px; border-top: 1px solid #eee; align-items: center; }
-                    input { flex: 1; background: #f8f9fa; border: 1px solid #ddd; color: #333; padding: 12px 20px; border-radius: 25px; outline: none; transition: 0.3s; }
-                    input:focus { border-color: #d4a017; background: white; box-shadow: 0 0 8px rgba(212,160,23,0.1); }
-                    button { background: #d4a017; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 10px rgba(212,160,23,0.2); }
-                    button:hover { background: #b88a14; transform: translateY(-1px); }
-                    button:disabled { background: #ccc; cursor: not-allowed; }
+                    input { flex: 1; background: #f8f9fa; border: 1px solid #ddd; color: #333; padding: 12px 20px; border-radius: 25px; outline: none; }
+                    button { background: #d4a017; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
                 </style>
             </head>
             <body>
@@ -72,10 +78,33 @@ const server = http.createServer((req, res) => {
                         }
                     }
 
+                    // 核心语音函数
+                    function speak(text) {
+                        const msg = new SpeechSynthesisUtterance();
+                        msg.text = text;
+                        msg.lang = 'zh-CN';
+                        msg.rate = 0.9; // 语速稍慢一点，更有智者风范
+                        window.speechSynthesis.speak(msg);
+                    }
+
                     function addMsg(text, type) {
                         const div = document.createElement('div');
                         div.className = 'message ' + type;
-                        div.innerText = text;
+                        
+                        // 文字内容
+                        const content = document.createElement('div');
+                        content.innerText = text;
+                        div.appendChild(content);
+
+                        // 如果是 AI 回复，增加语音播放按钮
+                        if(type === 'ai') {
+                            const sBtn = document.createElement('div');
+                            sBtn.className = 'speak-btn';
+                            sBtn.innerText = '🔊 点击倾听智慧';
+                            sBtn.onclick = () => speak(text);
+                            div.appendChild(sBtn);
+                        }
+
                         chatBox.appendChild(div);
                         chatBox.scrollTop = chatBox.scrollHeight;
                     }
@@ -85,7 +114,7 @@ const server = http.createServer((req, res) => {
             </html>
         `);
     }
-    // 3. 处理对话 API
+    // 3. API 逻辑保持不变
     else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => { body += chunk; });
@@ -93,25 +122,19 @@ const server = http.createServer((req, res) => {
             try {
                 const { message } = JSON.parse(body);
                 const apiKey = process.env.DEEPSEEK_API_KEY;
-
                 const postData = JSON.stringify({
                     model: "deepseek-chat",
                     messages: [
-                        { role: "system", content: "你是一位精通藏族文化、历史和哲学的现代博学智者。请用温和且通透的语言回答用户。" },
+                        { role: "system", content: "你是一位精通藏族文化、历史和哲学的现代博学智者。请用温和且通透的语言回答。由于你现在具备语音功能，请注意回答不要过于冗长，方便用户倾听。" },
                         { role: "user", content: message }
                     ]
                 });
-
                 const options = {
                     hostname: 'api.deepseek.com',
                     path: '/v1/chat/completions',
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + apiKey
-                    }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }
                 };
-
                 const apiReq = https.request(options, (apiRes) => {
                     let responseData = '';
                     apiRes.on('data', d => { responseData += d; });
@@ -132,4 +155,4 @@ const server = http.createServer((req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => { console.log('Khyen AI 升级成功！'); });
+server.listen(PORT, () => { console.log('Khyen AI 语音系统已就绪！'); });
