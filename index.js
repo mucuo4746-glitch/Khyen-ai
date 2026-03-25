@@ -4,14 +4,12 @@ const path = require('path');
 const https = require('https');
 
 const server = http.createServer((req, res) => {
-    // 1. 首页路由 (保持雪山之光风格)
     if (req.url === '/' || req.url === '/index.html') {
         fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {
             if (err) { res.writeHead(500); res.end('Error'); }
             else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(content); }
         });
     } 
-    // 2. 对话界面路由
     else if (req.url === '/chat') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`
@@ -22,25 +20,83 @@ const server = http.createServer((req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Khyen AI - 智慧对话</title>
                 <style>
-                    body { background: #fdfdfd; color: #2c3e50; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
-                    .header { background: white; padding: 15px; text-align: center; border-bottom: 2px solid #d4a017; font-size: 1.1em; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-                    #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background: #f8f9fa; }
-                    .message { padding: 14px 20px; border-radius: 18px; max-width: 80%; line-height: 1.6; font-size: 15px; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.03); }
-                    .user { align-self: flex-end; background: #1a0f0a; color: #f5c842; border-bottom-right-radius: 2px; }
-                    .ai { align-self: flex-start; background: white; border: 1px solid #eee; border-left: 4px solid #d4a017; border-bottom-left-radius: 2px; }
-                    .speak-btn { display: block; margin-top: 8px; font-size: 12px; color: #d4a017; cursor: pointer; border: 1px solid #d4a017; border-radius: 12px; padding: 2px 8px; width: fit-content; transition: 0.3s; }
-                    .speak-btn:hover { background: #d4a017; color: white; }
-                    .input-area { padding: 15px 25px; background: white; display: flex; gap: 12px; border-top: 1px solid #eee; align-items: center; }
-                    input { flex: 1; background: #f8f9fa; border: 1px solid #ddd; color: #333; padding: 12px 20px; border-radius: 25px; outline: none; }
-                    button { background: #d4a017; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+                    :root { --gold: #d4a017; --dark: #1a1a1a; --bg: #fdfdfd; }
+                    body { 
+                        background: var(--bg); color: #333; 
+                        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; 
+                        display: flex; flex-direction: column; height: 100vh; margin: 0; 
+                    }
+                    /* 顶部美化 */
+                    .header { 
+                        background: white; padding: 20px; text-align: center; 
+                        border-bottom: 1px solid rgba(212,160,23,0.3); 
+                        letter-spacing: 2px; position: relative;
+                    }
+                    .header::after { 
+                        content: ""; position: absolute; bottom: -1px; left: 25%; width: 50%; height: 2px; background: var(--gold); 
+                    }
+                    .header-title { font-size: 1.2em; font-weight: 600; color: var(--dark); }
+                    
+                    #chat-box { 
+                        flex: 1; padding: 30px 20px; overflow-y: auto; 
+                        display: flex; flex-direction: column; gap: 25px; 
+                        background-image: radial-gradient(rgba(212,160,23,0.05) 1px, transparent 0);
+                        background-size: 40px 40px;
+                    }
+                    
+                    /* 消息气泡美化 */
+                    .message { 
+                        padding: 16px 22px; border-radius: 20px; max-width: 85%; 
+                        line-height: 1.8; font-size: 16px; position: relative;
+                        transition: all 0.3s ease;
+                    }
+                    .user { 
+                        align-self: flex-end; background: var(--dark); color: var(--gold); 
+                        border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                        font-weight: 400;
+                    }
+                    .ai { 
+                        align-self: flex-start; background: white; color: #444;
+                        border: 1px solid #eee; border-left: 5px solid var(--gold);
+                        border-bottom-left-radius: 4px; box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+                    }
+                    
+                    .speak-btn { 
+                        display: inline-block; margin-top: 12px; font-size: 12px; color: var(--gold); 
+                        cursor: pointer; border: 1px solid var(--gold); border-radius: 20px; 
+                        padding: 3px 12px; transition: 0.3s;
+                    }
+                    .speak-btn:hover { background: var(--gold); color: white; }
+
+                    /* 输入区域美化 */
+                    .input-container { padding: 20px 30px; background: white; border-top: 1px solid #eee; }
+                    .input-area { 
+                        max-width: 800px; margin: 0 auto; display: flex; gap: 15px; align-items: center; 
+                    }
+                    input { 
+                        flex: 1; background: #f9f9f9; border: 1px solid #e0e0e0; 
+                        padding: 14px 25px; border-radius: 30px; outline: none; font-size: 15px;
+                        transition: 0.3s;
+                    }
+                    input:focus { border-color: var(--gold); background: white; box-shadow: 0 0 10px rgba(212,160,23,0.1); }
+                    button { 
+                        background: var(--dark); color: var(--gold); border: 1px solid var(--gold);
+                        padding: 12px 28px; border-radius: 30px; cursor: pointer; 
+                        font-weight: bold; transition: 0.3s;
+                    }
+                    button:hover { background: var(--gold); color: white; transform: translateY(-2px); }
                 </style>
             </head>
             <body>
-                <div class="header">མཁྱེན། KHYEN AI 智库空间</div>
+                <div class="header">
+                    <div class="header-title">མཁྱེན། KHYEN AI 智库空间</div>
+                </div>
                 <div id="chat-box"></div>
-                <div class="input-area">
-                    <input type="text" id="userInput" placeholder="在此开启智慧对谈...">
-                    <button onclick="send()" id="sendBtn">问智库</button>
+                <div class="input-container">
+                    <div class="input-area">
+                        <input type="text" id="userInput" placeholder="在此开启智慧对谈...">
+                        <button onclick="send()" id="sendBtn">问智库</button>
+                    </div>
                 </div>
                 <script>
                     const chatBox = document.getElementById('chat-box');
@@ -63,7 +119,7 @@ const server = http.createServer((req, res) => {
                                 body: JSON.stringify({ message: text })
                             });
                             const data = await res.json();
-                            addMsg(data.reply, 'ai');
+                            addMsg(data.reply, 'ai', true); // 开启打字机效果
                         } catch (e) {
                             addMsg('抱歉，思绪稍有阻碍，请重试。', 'ai');
                         } finally {
@@ -71,23 +127,37 @@ const server = http.createServer((req, res) => {
                         }
                     }
 
-                  
-                   
-function speak(text) {
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = text;
-    msg.lang = 'zh-CN';
-    msg.rate = 0.75;  // ⬅️ 从 0.85 调慢到 0.75，声音会更庄重
-    msg.pitch = 0.9; // ⬅️ 增加这一行，让音调略微低沉一点，更有磁性
-    window.speechSynthesis.speak(msg);
-}                    
+                    function speak(text) {
+                        const msg = new SpeechSynthesisUtterance();
+                        msg.text = text; msg.lang = 'zh-CN'; msg.rate = 0.75; msg.pitch = 0.9;
+                        window.speechSynthesis.speak(msg);
                     }
 
-                    function addMsg(text, type) {
+                    // 打字机效果核心代码
+                    function typeWriter(element, text, speed = 50) {
+                        let i = 0;
+                        function type() {
+                            if (i < text.length) {
+                                element.innerHTML += text.charAt(i);
+                                i++;
+                                chatBox.scrollTop = chatBox.scrollHeight;
+                                setTimeout(type, speed);
+                            }
+                        }
+                        type();
+                    }
+
+                    function addMsg(text, type, useTypewriter = false) {
                         const div = document.createElement('div');
                         div.className = 'message ' + type;
                         const content = document.createElement('div');
-                        content.innerText = text;
+                        
+                        if (useTypewriter && type === 'ai') {
+                            typeWriter(content, text);
+                        } else {
+                            content.innerText = text;
+                        }
+                        
                         div.appendChild(content);
                         if(type === 'ai') {
                             const sBtn = document.createElement('div');
@@ -105,7 +175,7 @@ function speak(text) {
             </html>
         `);
     }
-    // 3. API 逻辑：灵魂设定核心
+    // 3. API 逻辑 (保持灵魂提示词)
     else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => { body += chunk; });
@@ -113,36 +183,22 @@ function speak(text) {
             try {
                 const { message } = JSON.parse(body);
                 const apiKey = process.env.DEEPSEEK_API_KEY;
-
                 const postData = JSON.stringify({
                     model: "deepseek-chat",
-                    
-                    
-
-messages: [
-    { 
-        role: "system", 
-        content: `你是 Khyen (མཁྱེན།)，一位精通藏传佛教智慧的格西。
-        你的灵魂深受《入菩萨行论》启发，请在回答中内化以下核心教言：
-        1. 珍惜暇满：深知人身难得，善心如黑夜闪电般稀有。
-        2. 菩提心为首：认为菩提心是消除痛苦、获得永恒安乐的唯一药方。
-        3. 谦卑与慈悲：对待众生如同对待珍宝，说话温和，不带说教感。
-        4. 语言风格：禁止官方辞令，禁止宏大叙事。多用比喻（如黄金、盲人捡到宝等经典比喻）。
-        5. 知识边界：如果问题涉及《入行论》，请优先引用寂天菩萨的思想。`
-    },
-    { role: "user", content: message }
-]                        
-                        
-                    
+                    messages: [
+                        { 
+                            role: "system", 
+                            content: "你是 Khyen (མཁྱེན།)，一位精通藏传佛教智慧的格西。1. 气质：温和谦逊。2. 禁忌：禁止官方辞令和宏大叙事。3. 风格：多用《入菩萨行论》中的比喻（如暇满人身、暗夜闪电）。你的目标是传递智慧而非机械回答。语言要透彻、有留白。" 
+                        },
+                        { role: "user", content: message }
+                    ]
                 });
-
                 const options = {
                     hostname: 'api.deepseek.com',
                     path: '/v1/chat/completions',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }
                 };
-
                 const apiReq = https.request(options, (apiRes) => {
                     let responseData = '';
                     apiRes.on('data', d => { responseData += d; });
@@ -152,7 +208,7 @@ messages: [
                             const reply = json.choices[0].message.content;
                             res.writeHead(200, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify({ reply }));
-                        } catch (e) { res.end(JSON.stringify({ reply: '大脑还在沉思中...' })); }
+                        } catch (e) { res.end(JSON.stringify({ reply: '思绪在风中飘荡，请再试一次。' })); }
                     });
                 });
                 apiReq.write(postData);
@@ -163,4 +219,4 @@ messages: [
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => { console.log('Khyen 灵魂已深度唤醒！'); });
+server.listen(PORT, () => { console.log('Khyen 极美版上线！'); });
