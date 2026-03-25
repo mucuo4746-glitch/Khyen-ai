@@ -95,23 +95,33 @@ const server = http.createServer((req, res) => {
                     }
 
                     function addMsg(text, type, useTypewriter = false) {
-                        const div = document.createElement('div');
-                        div.className = 'message ' + type;
-                        const content = document.createElement('div');
-                        if (useTypewriter && type === 'ai') { typeWriter(content, text); } 
-                        else { content.innerText = text; }
-                        div.appendChild(content);
-                        if(type === 'ai') {
-                            const sBtn = document.createElement('div');
-                            sBtn.className = 'speak-btn'; sBtn.innerHTML = '🔊';
-                            sBtn.onclick = () => {
-                                const msg = new SpeechSynthesisUtterance(text);
-                                msg.lang = 'zh-CN'; msg.rate = 0.8; window.speechSynthesis.speak(msg);
-                            };
-                            div.appendChild(sBtn);
-                        }
-                        chatBox.appendChild(div);
-                        chatBox.scrollTop = chatBox.scrollHeight;
+    const div = document.createElement('div');
+    div.className = 'message ' + type;
+    const content = document.createElement('div');
+    if (useTypewriter && type === 'ai') { typeWriter(content, text); } 
+    else { content.innerText = text; }
+    div.appendChild(content);
+    if(type === 'ai') {
+        const sBtn = document.createElement('div');
+        sBtn.className = 'speak-btn'; sBtn.innerHTML = '🔊';
+        sBtn.onclick = () => {
+            const msg = new SpeechSynthesisUtterance(text);
+            
+            // --- 声音矫正逻辑：强制找普通话 ---
+            const voices = window.speechSynthesis.getVoices();
+            // 优先找带有 "zh-CN" 或 "Mandarin" 标识的声音
+            const mandarinVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('zh_CN'));
+            if (mandarinVoice) msg.voice = mandarinVoice;
+            
+            msg.lang = 'zh-CN'; 
+            msg.rate = 0.8; 
+            window.speechSynthesis.speak(msg);
+        };
+        div.appendChild(sBtn);
+    }
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}                    
                     }
                     input.addEventListener('keypress', e => { if(e.key === 'Enter') send(); });
                 </script>
