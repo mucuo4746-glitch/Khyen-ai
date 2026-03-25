@@ -71,12 +71,16 @@ const server = http.createServer((req, res) => {
                         }
                     }
 
-                    function speak(text) {
-                        const msg = new SpeechSynthesisUtterance();
-                        msg.text = text;
-                        msg.lang = 'zh-CN';
-                        msg.rate = 0.85; 
-                        window.speechSynthesis.speak(msg);
+                  
+                   
+function speak(text) {
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = text;
+    msg.lang = 'zh-CN';
+    msg.rate = 0.75;  // ⬅️ 从 0.85 调慢到 0.75，声音会更庄重
+    msg.pitch = 0.9; // ⬅️ 增加这一行，让音调略微低沉一点，更有磁性
+    window.speechSynthesis.speak(msg);
+}                    
                     }
 
                     function addMsg(text, type) {
