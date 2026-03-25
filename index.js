@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
                     .header-title { font-size: 1.4em; font-weight: 700; color: var(--dark); letter-spacing: 1px; }
                     #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; background: #fdfdfd; position: relative; }
                     #chat-box::before { content: "☸"; position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 280px; color: var(--gold); opacity: 0.03; pointer-events: none; }
-                    .message { padding: 16px 22px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 16px; z-index: 1; }
+                    .message { padding: 16px 22px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 16px; z-index: 1; word-wrap: break-word; }
                     .user { align-self: flex-end; background: var(--dark); color: var(--gold); border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
                     .ai { align-self: flex-start; background: white; color: #333; border-left: 5px solid var(--gold); border-bottom-left-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
                     .speak-btn { display: inline-block; margin-top: 10px; font-size: 22px; color: var(--gold); cursor: pointer; opacity: 0.7; }
@@ -47,10 +47,11 @@ const server = http.createServer((req, res) => {
                     const chatBox = document.getElementById('chat-box');
                     const input = document.getElementById('userInput');
 
-                    // 预加载语音包
-                    window.speechSynthesis.getVoices();
-
-                    window.onload = () => addMsg("བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！I am Khyen མཁྱེན།", 'ai');
+                    window.onload = () => {
+                        addMsg("བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！I am Khyen མཁྱེན།", 'ai');
+                        // 预热语音系统
+                        if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
+                    };
 
                     async function send() {
                         const text = input.value.trim();
@@ -65,7 +66,7 @@ const server = http.createServer((req, res) => {
                             });
                             const data = await res.json();
                             addMsg(data.reply, 'ai', true);
-                        } catch (e) { addMsg('...', 'ai'); }
+                        } catch (e) { addMsg('思绪在云端稍作停留，请再试一次。', 'ai'); }
                     }
 
                     function typeWriter(element, text, i = 0) {
@@ -77,21 +78,20 @@ const server = http.createServer((req, res) => {
                     }
 
                     function handleSpeak(text) {
-                        window.speechSynthesis.cancel(); // 停止当前所有播放
+                        window.speechSynthesis.cancel();
                         const msg = new SpeechSynthesisUtterance(text);
+                        // 强制普通话设置
                         msg.lang = 'zh-CN';
                         msg.rate = 0.8;
-                        msg.pitch = 0.9;
                         
-                        // 简单的兜底逻辑
                         const voices = window.speechSynthesis.getVoices();
-                        for (let v of voices) {
-                            // 优先匹配普通话
-                            if (v.lang.includes('zh-CN') || v.lang.includes('zh-Hans')) {
-                                msg.voice = v;
-                                break;
-                            }
-                        }
+                        // 核心逻辑：排除粤语，寻找大陆普通话
+                        const mandarinVoice = voices.find(v => 
+                            (v.lang.includes('zh-CN') || v.lang.includes('zh_CN')) && 
+                            !v.name.includes('Hong Kong') && !v.name.includes('Cantonese')
+                        );
+                        if (mandarinVoice) msg.voice = mandarinVoice;
+                        
                         window.speechSynthesis.speak(msg);
                     }
 
@@ -126,11 +126,17 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "deepseek-chat",
                     messages: [
-                        { role: "system", content: "你是 Khyen (མཁྱེན།)，一位精通藏传佛教智慧的格西。语气温和，多引用《入菩萨行论》。如果用户用藏文提问，请优先用藏文回答。" },
+                        { role: "system", content: "你是 Khyen (མཁྱེན།)，一位精通藏传佛教智慧的格西。语气温和且极其精炼。你的智慧核心源自《入菩萨行论》，请在回答中内化其精髓，但不要机械复读。如果用户用藏文提问，请优先用藏文回答。" },
                         { role: "user", content: message }
                     ]
                 });
-                const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
+                const options = { 
+                    hostname: 'api.deepseek.com', 
+                    path: '/v1/chat/completions', 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY },
+                    timeout: 30000 // 增加超市设置防止卡死
+                };
                 const apiReq = https.request(options, (apiRes) => {
                     let responseData = '';
                     apiRes.on('data', d => { responseData += d; });
@@ -142,6 +148,7 @@ const server = http.createServer((req, res) => {
                         } catch (e) { res.end(JSON.stringify({ reply: '...' })); }
                     });
                 });
+                apiReq.on('error', (e) => { res.end(JSON.stringify({ reply: '思绪飘远了，请再问一次。' })); });
                 apiReq.write(postData);
                 apiReq.end();
             } catch (err) { res.end('Error'); }
@@ -150,4 +157,4 @@ const server = http.createServer((req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => { console.log('Khyen 丝滑版就绪'); });
+server.listen(PORT, () => { console.log('Khyen 稳定版'); });
