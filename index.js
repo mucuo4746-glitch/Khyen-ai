@@ -94,27 +94,43 @@ const server = http.createServer((req, res) => {
                         }
                     }
 
-                    function addMsg(text, type, useTypewriter = false) {
+                 
+                    // 请找到 index.js 里的 addMsg 函数，完整替换为这一段：
+
+function addMsg(text, type, useTypewriter = false) {
     const div = document.createElement('div');
     div.className = 'message ' + type;
     const content = document.createElement('div');
-    if (useTypewriter && type === 'ai') { typeWriter(content, text); } 
-    else { content.innerText = text; }
+    if (useTypewriter && type === 'ai') { 
+        typeWriter(content, text); 
+    } else { 
+        content.innerText = text; 
+    }
     div.appendChild(content);
+    
     if(type === 'ai') {
         const sBtn = document.createElement('div');
         sBtn.className = 'speak-btn'; sBtn.innerHTML = '🔊';
         sBtn.onclick = () => {
+            // 先停止之前的播放
+            window.speechSynthesis.cancel();
+            
             const msg = new SpeechSynthesisUtterance(text);
-            
-            // --- 声音矫正逻辑：强制找普通话 ---
+            msg.lang = 'zh-CN';
+            msg.rate = 0.8;
+            msg.pitch = 0.9;
+
+            // 尝试获取声音列表
             const voices = window.speechSynthesis.getVoices();
-            // 优先找带有 "zh-CN" 或 "Mandarin" 标识的声音
-            const mandarinVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('zh_CN'));
-            if (mandarinVoice) msg.voice = mandarinVoice;
+            if (voices.length > 0) {
+                // 优先找普通话 (Mandarin/Mainland)
+                const mandarinVoice = voices.find(v => 
+                    (v.lang.includes('zh-CN') || v.lang.includes('zh_CH')) && 
+                    !v.name.includes('Cantonese') && !v.name.includes('Hong Kong')
+                );
+                if (mandarinVoice) msg.voice = mandarinVoice;
+            }
             
-            msg.lang = 'zh-CN'; 
-            msg.rate = 0.8; 
             window.speechSynthesis.speak(msg);
         };
         div.appendChild(sBtn);
