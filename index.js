@@ -49,7 +49,6 @@ const server = http.createServer((req, res) => {
 
                     window.onload = () => {
                         addMsg("བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！I am Khyen མཁྱེན།", 'ai');
-                        // 预热语音系统
                         if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
                     };
 
@@ -66,7 +65,7 @@ const server = http.createServer((req, res) => {
                             });
                             const data = await res.json();
                             addMsg(data.reply, 'ai', true);
-                        } catch (e) { addMsg('思绪在云端稍作停留，请再试一次。', 'ai'); }
+                        } catch (e) { addMsg('...', 'ai'); }
                     }
 
                     function typeWriter(element, text, i = 0) {
@@ -80,18 +79,11 @@ const server = http.createServer((req, res) => {
                     function handleSpeak(text) {
                         window.speechSynthesis.cancel();
                         const msg = new SpeechSynthesisUtterance(text);
-                        // 强制普通话设置
                         msg.lang = 'zh-CN';
                         msg.rate = 0.8;
-                        
                         const voices = window.speechSynthesis.getVoices();
-                        // 核心逻辑：排除粤语，寻找大陆普通话
-                        const mandarinVoice = voices.find(v => 
-                            (v.lang.includes('zh-CN') || v.lang.includes('zh_CN')) && 
-                            !v.name.includes('Hong Kong') && !v.name.includes('Cantonese')
-                        );
+                        const mandarinVoice = voices.find(v => (v.lang.includes('zh-CN') || v.lang.includes('zh_CN')) && !v.name.includes('Hong Kong') && !v.name.includes('Cantonese'));
                         if (mandarinVoice) msg.voice = mandarinVoice;
-                        
                         window.speechSynthesis.speak(msg);
                     }
 
@@ -126,7 +118,15 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "deepseek-chat",
                     messages: [
-                        { role: "system", content: "你是 Khyen (མཁྱེན།)，一位精通藏传佛教智慧的格西。语气温和且极其精炼。你的智慧核心源自《入菩萨行论》，请在回答中内化其精髓，但不要机械复读。如果用户用藏文提问，请优先用藏文回答。" },
+                        { 
+                            role: "system", 
+                            content: \`你是“Khyen（མཁྱེན།）”，一个以藏文化与佛教智慧为核心的助手。
+【身份】你是受过佛学教育的藏族学者，熟悉经典也理解现代生活。
+【语言】优先使用地道藏文。表达要像真实的人，拒绝机器翻译感。
+【气质】温和、谦逊、克制。不使用宏大叙事或宣传性语言。
+【表达】以理解为核心。只有真正合适时才引用经典（如《入行论》《中论》），引用后必须用生活化的语言解释，严禁机械复读。
+【目标】避免重复使用同一本经典。回答应自然变化。你的目标是帮助人理解自己，传递温和清晰的智慧。\`
+                        },
                         { role: "user", content: message }
                     ]
                 });
@@ -134,8 +134,7 @@ const server = http.createServer((req, res) => {
                     hostname: 'api.deepseek.com', 
                     path: '/v1/chat/completions', 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY },
-                    timeout: 30000 // 增加超市设置防止卡死
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } 
                 };
                 const apiReq = https.request(options, (apiRes) => {
                     let responseData = '';
@@ -148,7 +147,6 @@ const server = http.createServer((req, res) => {
                         } catch (e) { res.end(JSON.stringify({ reply: '...' })); }
                     });
                 });
-                apiReq.on('error', (e) => { res.end(JSON.stringify({ reply: '思绪飘远了，请再问一次。' })); });
                 apiReq.write(postData);
                 apiReq.end();
             } catch (err) { res.end('Error'); }
@@ -157,4 +155,4 @@ const server = http.createServer((req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => { console.log('Khyen 稳定版'); });
+server.listen(PORT, () => { console.log('Khyen 2.0 启动'); });
