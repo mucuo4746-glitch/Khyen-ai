@@ -15,7 +15,7 @@ const server = http.createServer((req, res) => {
             }
         });
     } 
-    // 2. 聊天页面界面 (加入“表情防火墙”)
+    // 2. 聊天界面（大气字体 + 表情自动过滤）
     else if (req.url === '/chat') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`
@@ -54,7 +54,7 @@ const server = http.createServer((req, res) => {
         function add(text, type){
             const div = document.createElement('div');
             div.className = 'msg ' + type;
-            // 💡 导师防火墙：彻底过滤掉所有 (括号) 里的戏精表情
+            // 💡 导师防火墙：彻底过滤掉所有 (括号) 里的语气词和表情
             text = text.replace(/\\(([^)]+)\\)/g, '').replace(/（([^）]+)）/g, '').trim();
             div.innerText = text;
             chat.appendChild(div);
@@ -66,22 +66,45 @@ const server = http.createServer((req, res) => {
             if(!text) return;
             add(text, 'user');
             input.value = '';
-            const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text}) });
-            const data = await res.json();
-            add(data.reply, 'ai');
+            try {
+                const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text}) });
+                const data = await res.json();
+                add(data.reply, 'ai');
+            } catch (e) {
+                add("山间风紧，消息暂未传到...", "ai");
+            }
         }
     </script>
 </body>
 </html>
 `);
     } 
-    // 3. 后端 API (强化名字与禁止调情)
+    // 3. 后端逻辑（融合博学学者人设 + 三语精通 + 核心资料）
     else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => body += chunk);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            const systemPrompt = "你的全名是 KHYEN AI མཁྱེན།。你是一个宁静的高原智者。严格禁止在回复中使用(微笑)、(轻声)等任何表情描述。禁止任何调情、轻浮或过于亲昵的语气。用词要庄重、简洁、自然。藏文问藏文回，中文问中文回，绝不混用。";
+            
+            // 💡 指挥官，这是咱们切磋出的“终极灵魂指令”
+            const systemPrompt = \`
+你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、语气温暖而庄重的藏族学者。
+
+【核心人设与守则】
+1. 语言大师：你精通藏文、中文、英文三语。用户用哪种语言提问就用哪种语言回答。遇到重要概念，可以三语并列显示。严禁说自己不懂某种语言。
+2. 智慧学者：回答要有深度。遇到生活文化问题要生动自然；遇到哲学、宗教问题要展现洞察。不要过于幼稚。
+3. 拒绝教条：饮食、节日、日常文化问题请用专业知识回答，禁止强行引用经论。只有在专门讨论修行、哲学时才引用经典。
+4. 真实诚恳：严禁说“问题本身是答案”这种空话。如果回答“书是谁写的”，要像人一样回答“书是人写的”。
+
+【核心资料（你的记忆库）】
+- 哈达：ཁ་བཏགས་ནི་གངས་ལྟར་དཀར་བའི་ལྷག་བསམ་མཚོན་བྱེད་དུ་རེད།（哈达如雪山洁白，象征赤诚之心）
+- 世间：བལྟས་ན་སྐྱིད་སྐྱིད་འདྲ་བའི་འཇིག་རྟེན་གྱི་ཕུན་ཚོགས།།（看似充满幸福的世间万物，闻来各有自身的千愁万绪）
+- 情感：参考《思念宗喀巴》中母子连心的深情，语气要厚重感人。
+- 修行：参考《练心八颂》“视众生胜过如意宝”，但仅在相关时引用。
+
+【行为禁止】
+- 严禁调情，禁止使用(微笑)、(轻声)等任何表情描述。
+\`;
 
             const postData = JSON.stringify({
                 model: "deepseek-chat",
@@ -101,13 +124,20 @@ const server = http.createServer((req, res) => {
                 apiRes.on('end', () => {
                     try {
                         const json = JSON.parse(data);
-                        const reply = json.choices?.[0]?.message?.content || '此时无声。';
+                        const reply = json.choices?.[0]?.message?.content || '此时无声，心神合一。';
                         res.end(JSON.stringify({ reply }));
-                    } catch (e) { res.end(JSON.stringify({ reply: '出错。' })); }
+                    } catch (e) { res.end(JSON.stringify({ reply: '出了点小错。' })); }
                 });
             });
-            apiReq.write(postData); apiReq.end();
+
+            apiReq.on('error', () => {
+                res.end(JSON.stringify({ reply: '连接有点慢。' }));
+            });
+
+            apiReq.write(postData);
+            apiReq.end();
         });
     }
 });
+
 server.listen(process.env.PORT || 10000);
