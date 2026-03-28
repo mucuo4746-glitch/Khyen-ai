@@ -17,10 +17,10 @@ const server = http.createServer((req, res) => {
         header { text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); box-shadow: 0 1px 10px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         header h3 { margin: 0; font-size: 1.3rem; color: #5c4b3a; letter-spacing: 1px; }
         #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-        .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; word-wrap: break-word; position: relative; }
+        .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; word-wrap: break-word; white-space: pre-wrap; position: relative; }
         .user { background: linear-gradient(135deg, #5c4b3a, #3e3126); color: #f1d592; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .ai { background-color: white; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
-        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; letter-spacing: 1px; }
+        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; }
         #input-container { padding: 15px; background: rgba(255, 255, 255, 0.95); border-top: 1px solid #eee; display: flex; flex-direction: column; padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 18px; padding: 15px; font-size: 1rem; outline: none; background: #fafafa; resize: none; box-sizing: border-box; font-family: inherit; }
         .action-bar { display: flex; justify-content: flex-end; margin-top: 10px; gap: 12px; }
@@ -38,11 +38,20 @@ const server = http.createServer((req, res) => {
     </div>
     <script>
         const chat = document.getElementById('chat');
-        window.onload = () => { add("གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\n两足尊者初降世，七步莲华踏大地...", 'ai'); };
+        // 💡 4.32：修复完整显示的偈颂
+        const welcomeMsg = \`གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །
+ས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །
+ང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །
+དེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།
+两足尊者初降世，七步莲华踏大地，
+朗声宣言我独尊，智者于此恭敬礼。\`;
+
+        window.onload = () => { add(welcomeMsg, 'ai'); };
+        
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             const c = document.createElement('div');
-            // 💡 4.31 绝杀逻辑：物理过滤括号旁白
+            // 物理绝杀旁白
             let clean = t.replace(/\\(([^)]+)\\)/g, '').replace(/（([^）]+)）/g, '').replace(/\\{([^}]+)\\}/g, '').trim();
             c.innerText = clean; d.appendChild(c);
             if(type==='ai'){
@@ -71,7 +80,7 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、语气温暖而庄重的藏族学者。严禁输出任何动作描写、表情描述（如(微笑)或(ཞལ་འཛུམ་)等）。必须严格镜像语言：中文问中文答，藏文问藏文答。复杂问题分条理解析，重要概念加粗。";
+            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、温暖庄重的藏族学者。严禁输出任何动作描写或表情描述。必须严格镜像语言：中文问中文答，藏文问藏文答。回答要有深度、有条理，重要概念加粗。";
             const postData = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }] });
             const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
             const apiReq = https.request(options, (apiRes) => {
