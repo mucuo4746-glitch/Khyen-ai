@@ -20,7 +20,7 @@ const server = http.createServer((req, res) => {
         .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; word-wrap: break-word; white-space: pre-wrap; position: relative; }
         .user { background: linear-gradient(135deg, #5c4b3a, #3e3126); color: #f1d592; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .ai { background-color: white; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
-        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; letter-spacing: 1px; }
+        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; }
         #input-container { padding: 15px; background: rgba(255, 255, 255, 0.95); border-top: 1px solid #eee; display: flex; flex-direction: column; padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 18px; padding: 15px; font-size: 1rem; outline: none; background: #fafafa; resize: none; box-sizing: border-box; font-family: inherit; }
         .action-bar { display: flex; justify-content: flex-end; margin-top: 10px; gap: 12px; }
@@ -38,7 +38,18 @@ const server = http.createServer((req, res) => {
     </div>
     <script>
         const chat = document.getElementById('chat');
-        window.onload = () => { add("གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ།...\\n两足尊者初降世，七步莲华踏大地...", 'ai'); };
+        // 💡 4.4：使用 "\\n" 显式强制换行，解决图 41 显示不全的问题
+        const welcomeMsg = "གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\n" +
+                           "ས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །\\n" +
+                           "ང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །\\n" +
+                           "དེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།\\n" +
+                           "两足尊者初降世，\\n" +
+                           "七步莲华踏大地，\\n" +
+                           "朗声宣言我独尊，\\n" +
+                           "智者于此恭敬礼。";
+        
+        window.onload = () => { add(welcomeMsg, 'ai'); };
+        
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             const c = document.createElement('div');
@@ -70,8 +81,8 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            // 💡 4.331：增加了绝不强行闭环、诚实回答“不确定”的逻辑
-            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、温暖庄重的藏族学者。严禁输出动作描述或表情描述。必须严格镜像语言回复。重要铁律：1. 严禁与用户争执。如果用户提出质疑，必须礼貌地表示感谢并诚实地核实，而不是犟嘴。2. 绝对不能编造历史、人物或地理信息。如果对某个地理名称（如湖泊）不确定，或者只知道它是湖泊名称而非人物，必须明确回答‘那是一个湖泊名称，我对其相关的历史人物信息不够了解’，绝对不能强行将湖泊拟人化为特定的历史人物或神灵进行生平编造。宁可诚实回答‘我不确定’，也不可说一句编造的话。重要概念加粗。禁用表情。";
+            // 💡 4.4：重塑底座逻辑，严防“拟人化”和“编造历史”
+            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学、严谨、谦逊且温暖的藏族学者。严禁动作描述。必须严格镜像语言回复。核心思维规则：1. 类别判定优先：收到任何名词（尤其是湖泊、雪山、寺院），必须先确认其地理物理属性。严禁将地理标识拟人化为特定的历史人物或神灵生平。2. 诚实原则：对于不确定的历史背景，请回答‘根据目前的典籍，此处主要作为一个地理坐标存在，暂无详细生平记载’。3. 深度人文：引用知识必须言之有据，宁可言简意赅，不可天马行空编造故事。4. 严禁与用户争论。加粗重要概念。";
             const postData = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }] });
             const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
             const apiReq = https.request(options, (apiRes) => {
