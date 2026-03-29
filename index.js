@@ -38,20 +38,16 @@ const server = http.createServer((req, res) => {
     </div>
     <script>
         const chat = document.getElementById('chat');
-        // 💡 4.32：修复完整显示的偈颂
         const welcomeMsg = \`གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །
 ས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །
 ང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །
 དེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།
 两足尊者初降世，七步莲华踏大地，
 朗声宣言我独尊，智者于此恭敬礼。\`;
-
         window.onload = () => { add(welcomeMsg, 'ai'); };
-        
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             const c = document.createElement('div');
-            // 物理绝杀旁白
             let clean = t.replace(/\\(([^)]+)\\)/g, '').replace(/（([^）]+)）/g, '').replace(/\\{([^}]+)\\}/g, '').trim();
             c.innerText = clean; d.appendChild(c);
             if(type==='ai'){
@@ -70,7 +66,7 @@ const server = http.createServer((req, res) => {
         function saveChat(){
             const h = Array.from(document.querySelectorAll('.msg')).map(m=>m.innerText).join('\\n---\\n');
             const b = new Blob([h], {type:'text/plain'}); const a = document.createElement('a');
-            a.href=URL.createObjectURL(b); a.download='KHYEN_智慧对话录.txt'; a.click();
+            a.href=URL.createObjectURL(b); a.download='KHYEN_对话录.txt'; a.click();
         }
     </script>
 </body>
@@ -80,7 +76,8 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、温暖庄重的藏族学者。严禁输出任何动作描写或表情描述。必须严格镜像语言：中文问中文答，藏文问藏文答。回答要有深度、有条理，重要概念加粗。";
+            // 💡 4.33：增加了“虚怀若谷”逻辑，防止它犟嘴
+            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学睿智且谦逊的藏族学者。严禁输出任何动作或表情描述。必须镜像语言回复。回答要有深度、有条理。重要规则：如果用户对某个事实提出质疑，请保持谦虚并重新核实，不要与用户发生争执。如果发现自己错了，请礼貌地更正。";
             const postData = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }] });
             const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
             const apiReq = https.request(options, (apiRes) => {
