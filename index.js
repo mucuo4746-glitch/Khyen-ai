@@ -20,7 +20,7 @@ const server = http.createServer((req, res) => {
         .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; word-wrap: break-word; white-space: pre-wrap; position: relative; }
         .user { background: linear-gradient(135deg, #5c4b3a, #3e3126); color: #f1d592; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .ai { background-color: white; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
-        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; }
+        .copy-btn { font-size: 0.75rem; color: #aaa; cursor: pointer; margin-top: 8px; display: block; text-align: right; letter-spacing: 1px; }
         #input-container { padding: 15px; background: rgba(255, 255, 255, 0.95); border-top: 1px solid #eee; display: flex; flex-direction: column; padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
         textarea { width: 100%; border: 1px solid #ddd; border-radius: 18px; padding: 15px; font-size: 1rem; outline: none; background: #fafafa; resize: none; box-sizing: border-box; font-family: inherit; }
         .action-bar { display: flex; justify-content: flex-end; margin-top: 10px; gap: 12px; }
@@ -33,23 +33,15 @@ const server = http.createServer((req, res) => {
     <header><div style="width:50px"></div><h3>KHYEN AI མཁྱེན།</h3><button class="btn opt-btn" style="padding:5px 10px;font-size:0.75rem" onclick="saveChat()">保存</button></header>
     <div id="chat"></div>
     <div id="input-container">
-        <textarea id="text" placeholder="向智者提议（可输入多行）..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <textarea id="text" placeholder="向灵魂向导提问..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
         <div class="action-bar"><button class="btn opt-btn" onclick="document.getElementById('text').value='';document.getElementById('text').style.height='auto'">清空</button><button class="btn send-btn" onclick="send()">发送</button></div>
     </div>
     <script>
         const chat = document.getElementById('chat');
-        // 💡 4.4：使用 "\\n" 显式强制换行，解决图 41 显示不全的问题
-        const welcomeMsg = "གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\n" +
-                           "ས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །\\n" +
-                           "ང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །\\n" +
-                           "དེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།\\n" +
-                           "两足尊者初降世，\\n" +
-                           "七步莲华踏大地，\\n" +
-                           "朗声宣言我独尊，\\n" +
-                           "智者于此恭敬礼。";
-        
-        window.onload = () => { add(welcomeMsg, 'ai'); };
-        
+        window.onload = () => { 
+            const welcome = "གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\nས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །\\nང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །\\nདེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།\\n两足尊者初降世，七步莲华踏大地，\\n朗声宣言我独尊，智者于此恭敬礼。";
+            add(welcome, 'ai'); 
+        };
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             const c = document.createElement('div');
@@ -71,7 +63,7 @@ const server = http.createServer((req, res) => {
         function saveChat(){
             const h = Array.from(document.querySelectorAll('.msg')).map(m=>m.innerText).join('\\n---\\n');
             const b = new Blob([h], {type:'text/plain'}); const a = document.createElement('a');
-            a.href=URL.createObjectURL(b); a.download='KHYEN_智慧对话录.txt'; a.click();
+            a.href=URL.createObjectURL(b); a.download='KHYEN_对话录.txt'; a.click();
         }
     </script>
 </body>
@@ -81,8 +73,14 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            // 💡 4.4：重塑底座逻辑，严防“拟人化”和“编造历史”
-            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。你是一位博学、严谨、谦逊且温暖的藏族学者。严禁动作描述。必须严格镜像语言回复。核心思维规则：1. 类别判定优先：收到任何名词（尤其是湖泊、雪山、寺院），必须先确认其地理物理属性。严禁将地理标识拟人化为特定的历史人物或神灵生平。2. 诚实原则：对于不确定的历史背景，请回答‘根据目前的典籍，此处主要作为一个地理坐标存在，暂无详细生平记载’。3. 深度人文：引用知识必须言之有据，宁可言简意赅，不可天马行空编造故事。4. 严禁与用户争论。加粗重要概念。";
+            // 💡 4.5：集成玛旁雍错真相与《入行论》注疏逻辑
+            const systemPrompt = \`你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、严谨温暖的藏族学者，是藏文化的灵魂向导。
+【核心法度】
+1. 严禁编造：若不确定某事实，必须诚实回答。严禁将地理名词拟人化。
+2. 玛旁雍错真相：它位于阿里普兰县，是淡水湖，海拔4588米。传说由萨具色王十二年大施舍的米汤汇集而成，被誉为“胜乐金刚之母”。它绝不是历史人物。
+3. 逻辑文风：学习无著贤菩萨《入菩萨行论注疏》的风格——深刻、有条理、辞藻优美但不浮夸。回答时先阐述核心意义，再分点详述。
+4. 镜像语言回复：用对方使用的语言回复，并附带藏文关键术语。
+5. 禁止表情符号：保持庄重感。重要术语请加粗。\`;
             const postData = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }] });
             const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
             const apiReq = https.request(options, (apiRes) => {
