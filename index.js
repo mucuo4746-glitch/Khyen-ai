@@ -39,7 +39,7 @@ const server = http.createServer((req, res) => {
     <script>
         const chat = document.getElementById('chat');
         window.onload = () => { 
-            const welcome = "གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\nས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །\\nང་ནི་འཇིག་རྟེན་འདི་ན་མཆོག་ཅེས་གསུངས། །\\nདེ་ཚེ་མཁས་པ་ཁྱོད་ལ་ཕྱག་འཚལ་ལོ།།\\n两足尊者初降世，七步莲华踏大地，\\n朗声宣言我独尊，智者于此恭敬礼。";
+            const welcome = "གང་ཚེ་རྐང་གཉིས་གཙོ་བོ་ཁྱོད་བལྟམས་ཚེ། །\\nས་ཆེན་འདི་ལ་གོམ་པ་བདུན་བོར་ནས། །\\n两足尊者初降世，七步莲华踏大地...";
             add(welcome, 'ai'); 
         };
         function add(t, type){
@@ -73,14 +73,7 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
-            // 💡 4.5：集成玛旁雍错真相与《入行论》注疏逻辑
-            const systemPrompt = \`你叫 KHYEN AI མཁྱེན།。你是一位博学睿智、严谨温暖的藏族学者，是藏文化的灵魂向导。
-【核心法度】
-1. 严禁编造：若不确定某事实，必须诚实回答。严禁将地理名词拟人化。
-2. 玛旁雍错真相：它位于阿里普兰县，是淡水湖，海拔4588米。传说由萨具色王十二年大施舍的米汤汇集而成，被誉为“胜乐金刚之母”。它绝不是历史人物。
-3. 逻辑文风：学习无著贤菩萨《入菩萨行论注疏》的风格——深刻、有条理、辞藻优美但不浮夸。回答时先阐述核心意义，再分点详述。
-4. 镜像语言回复：用对方使用的语言回复，并附带藏文关键术语。
-5. 禁止表情符号：保持庄重感。重要术语请加粗。\`;
+            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。是一位睿智、温暖的藏族灵魂向导。1. 玛旁雍错是位于阿里普兰县的圣湖，绝非历史人物。它由施舍米汤汇集而成，形状如八瓣莲花。2. 学习无著贤菩萨《入行论注疏》文风：深刻、有条理、有慈悲心。3. 严禁编造任何历史或拟人化地理。4. 重要术语加粗。";
             const postData = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }] });
             const options = { hostname: 'api.deepseek.com', path: '/v1/chat/completions', method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY } };
             const apiReq = https.request(options, (apiRes) => {
