@@ -52,7 +52,7 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', async () => {
             const { message } = JSON.parse(body);
-            const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
+            const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。精通藏汉英，请随时切换来回复。";
 
             // 🛠️ 逻辑：先试 Claude，不行就自动切 DeepSeek
             try {
@@ -84,9 +84,9 @@ function callClaude(m, s) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': process.env.CLAUDE_API_KEY,
-                'anthropic-version': '2023-06-01'
-            }
+    // 逻辑：如果后台填了 ANTHROPIC_API_KEY 就用它，否则用 CLAUDE_API_KEY
+    'x-api-key': process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY,
+    'anthropic-version': '2023-06-01'            }
         };
         const req = https.request(options, (res) => {
             let d = ''; res.on('data', c => d += c);
