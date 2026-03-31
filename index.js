@@ -34,7 +34,7 @@ const server = http.createServer((req, res) => {
     </div>
     <script>
         const chat = document.getElementById('chat');
-        window.onload = () => add("མཁྱེན་ནོ། 正在为您连接双程智慧智库...\\n两足尊者初降世，七步莲华踏大地。", 'ai');
+        window.onload = () => add("མཁྱེན་ནོ། 正在为您调动 Claude 3.5 最新智库...\\n如果拨通，智慧将如泉涌现。", 'ai');
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             d.innerText = t; chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
@@ -52,79 +52,44 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', async () => {
             const { message } = JSON.parse(body);
-            const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。精通藏汉英，请随时切换来回复。";
+            const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
 
-            // 🛠️ 逻辑：先试 Claude，不行就自动切 DeepSeek
             try {
-                const reply = await callClaude(message, sys);
-                res.end(JSON.stringify({ reply }));
+                // 1. 核心调用：使用最新模型名和地址
+                const postData = JSON.stringify({
+                    model: "claude-3-5-sonnet-20241022",
+                    max_tokens: 1024,
+                    system: sys,
+                    messages: [{ role: "user", content: message }]
+                });
+
+                const options = {
+                    hostname: 'api.anthropic.com',
+                    path: '/v1/messages',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': process.env.ANTHROPIC_API_KEY, // 2. 核心变量名对齐
+                        'anthropic-version': '2023-06-01'
+                    }
+                };
+
+                const apiReq = https.request(options, (apiRes) => {
+                    let d = ''; apiRes.on('data', c => d += c);
+                    apiRes.on('end', () => {
+                        const json = JSON.parse(d);
+                        if (json.content) res.end(JSON.stringify({ reply: json.content[0].text }));
+                        else res.end(JSON.stringify({ reply: "❌ Claude 后台反馈：" + (json.error ? json.error.message : "未知错误") }));
+                    });
+                });
+
+                apiReq.on('error', e => res.end(JSON.stringify({ reply: "❌ 网络请求失败：" + e.message })));
+                apiReq.write(postData); apiReq.end();
+
             } catch (e) {
-                try {
-                    const reply = await callDeepSeek(message, sys);
-                    res.end(JSON.stringify({ reply: "【备用通道】" + reply }));
-                } catch (e2) {
-                    res.end(JSON.stringify({ reply: "❌ 哎呀，双通道均未拨通，请检查 Render 后台 Key 是否填对。" }));
-                }
+                res.end(JSON.stringify({ reply: "❌ 系统运行异常，请检查配置。" }));
             }
         });
     }
 });
-
-function callClaude(m, s) {
-    return new Promise((resolve, reject) => {
-        const postData = JSON.stringify({
-            model: "claude-3-5-sonnet-20240620",
-            max_tokens: 1024,
-            system: s,
-            messages: [{ role: "user", content: m }]
-        });
-        const options = {
-            hostname: 'api.anthropic.com',
-            path: '/v1/messages',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-    // 逻辑：如果后台填了 ANTHROPIC_API_KEY 就用它，否则用 CLAUDE_API_KEY
-    'x-api-key': process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY,
-    'anthropic-version': '2023-06-01'            }
-        };
-        const req = https.request(options, (res) => {
-            let d = ''; res.on('data', c => d += c);
-            res.on('end', () => {
-                const j = JSON.parse(d);
-                if (j.content) resolve(j.content[0].text);
-                else reject();
-            });
-        });
-        req.on('error', reject); req.write(postData); req.end();
-    });
-}
-
-function callDeepSeek(m, s) {
-    return new Promise((resolve, reject) => {
-        const postData = JSON.stringify({
-            model: "deepseek-chat",
-            messages: [{ role: "system", content: s }, { role: "user", content: m }]
-        });
-        const options = {
-            hostname: 'api.deepseek.com',
-            path: '/v1/chat/completions',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY
-            }
-        };
-        const req = https.request(options, (res) => {
-            let d = ''; res.on('data', c => d += c);
-            res.on('end', () => {
-                const j = JSON.parse(d);
-                if (j.choices) resolve(j.choices[0].message.content);
-                else reject();
-            });
-        });
-        req.on('error', reject); req.write(postData); req.end();
-    });
-}
-
 server.listen(process.env.PORT || 10000);
