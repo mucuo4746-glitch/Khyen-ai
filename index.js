@@ -11,50 +11,40 @@ const server = http.createServer((req, res) => {
             const { message } = JSON.parse(body);
             const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
 
-            // 这里的优化：兼容两种常见的命名方式
-            const claudeKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
-            const dsKey = process.env.DEEPSEEK_API_KEY;
-
             // 逻辑 1：调用 Claude
             const callClaude = () => new Promise(resolve => {
-                if(!claudeKey) return resolve(null);
                 const postData = JSON.stringify({ model: "claude-3-5-sonnet-latest", max_tokens: 1024, system: sys, messages: [{ role: "user", content: message }] });
                 const reqApi = https.request({
                     hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': claudeKey, 'anthropic-version': '2023-06-01' }
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => { 
-                        try { 
-                            const j = JSON.parse(d); 
-                            if(j.content) resolve(j.content[0].text);
-                            else resolve("Claude 提示: " + (j.error ? j.error.message : "未知错误")); 
-                        } catch(e){ resolve(null); } 
-                    });
+                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.content ? j.content[0].text : "CLAUDE_ERR"); } catch(e){ resolve("CLAUDE_ERR"); } });
                 });
-                reqApi.on('error', () => resolve(null)); reqApi.write(postData); reqApi.end();
+                reqApi.on('error', () => resolve("CLAUDE_ERR")); reqApi.write(postData); reqApi.end();
             });
 
             // 逻辑 2：调用 DeepSeek
             const callDeepSeek = () => new Promise(resolve => {
-                if(!dsKey) return resolve(null);
                 const postData = JSON.stringify({ model: "deepseek-chat", messages: [{role:"system", content:sys}, {role:"user", content:message}] });
                 const reqApi = https.request({
                     hostname: 'api.deepseek.com', path: '/chat/completions', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${dsKey}` }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}` }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.choices ? j.choices[0].message.content : null); } catch(e){ resolve(null); } });
+                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.choices ? j.choices[0].message.content : "DEEPSEEK_ERR"); } catch(e){ resolve("DEEPSEEK_ERR"); } });
                 });
-                reqApi.on('error', () => resolve(null)); reqApi.write(postData); reqApi.end();
+                reqApi.on('error', () => resolve("DEEPSEEK_ERR")); reqApi.write(postData); reqApi.end();
             });
 
             let reply = await callClaude();
-            // 如果 Claude 返回了具体的错误（比如权限、额度），我们直接显示，不再跳 DeepSeek，除非 Claude 完全拨不通
-            if (!reply || reply.includes("Claude 提示")) {
-                const dsReply = await callDeepSeek();
-                if (dsReply) reply = "[Claude 暂不可用，已转接 DeepSeek] " + dsReply;
-                else reply = reply || "❌ 所有通道均未拨通，请检查 Render 后台 Key 是否填对。";
+            // 核心补丁：如果 Claude 返回错误字样，立即强切
+            if (reply === "CLAUDE_ERR" || reply.includes("model") || reply.includes("error")) {
+                reply = await callDeepSeek();
+            }
+
+            if (reply === "DEEPSEEK_ERR") {
+                reply = "❌ 两位智者都在闭关。请确认 5 美金是否真的到账，或者稍后再试。";
             }
             res.end(JSON.stringify({ reply }));
         });
