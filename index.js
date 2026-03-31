@@ -34,7 +34,7 @@ const server = http.createServer((req, res) => {
     </div>
     <script>
         const chat = document.getElementById('chat');
-        window.onload = () => add("མཁྱེན་ནོ། 正在为您调动 Claude 3.5 最新智库...\\n如果拨通，智慧将如泉涌现。", 'ai');
+        window.onload = () => add("མཁྱེན་ནོ། 正在为您调动智慧智库...\\n如果拨通，智慧将如泉涌现。", 'ai');
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             d.innerText = t; chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
@@ -54,40 +54,54 @@ const server = http.createServer((req, res) => {
             const { message } = JSON.parse(body);
             const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
 
-            try {
-                // 1. 核心调用：使用最新模型名和地址
-                const postData = JSON.stringify({
-                    model: "claude-3-5-sonnet-20241022",
-                    max_tokens: 1024,
-                    system: sys,
-                    messages: [{ role: "user", content: message }]
-                });
-
-                const options = {
-                    hostname: 'api.anthropic.com',
-                    path: '/v1/messages',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': process.env.ANTHROPIC_API_KEY, // 2. 核心变量名对齐
-                        'anthropic-version': '2023-06-01'
-                    }
-                };
-
-                const apiReq = https.request(options, (apiRes) => {
-                    let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => {
-                        const json = JSON.parse(d);
-                        if (json.content) res.end(JSON.stringify({ reply: json.content[0].text }));
-                        else res.end(JSON.stringify({ reply: "❌ Claude 后台反馈：" + (json.error ? json.error.message : "未知错误") }));
+            // 尝试调用 Claude，如果报错则尝试降级模型
+            const callClaude = (modelName) => {
+                return new Promise((resolve) => {
+                    const postData = JSON.stringify({
+                        model: modelName,
+                        max_tokens: 1024,
+                        system: sys,
+                        messages: [{ role: "user", content: message }]
                     });
+
+                    const options = {
+                        hostname: 'api.anthropic.com',
+                        path: '/v1/messages',
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': process.env.ANTHROPIC_API_KEY,
+                            'anthropic-version': '2023-06-01'
+                        }
+                    };
+
+                    const apiReq = https.request(options, (apiRes) => {
+                        let d = ''; apiRes.on('data', c => d += c);
+                        apiRes.on('end', () => {
+                            try {
+                                const json = JSON.parse(d);
+                                if (json.content) resolve({ success: true, text: json.content[0].text });
+                                else resolve({ success: false, error: json.error ? json.error.message : d });
+                            } catch (e) { resolve({ success: false, error: "解析失败" }); }
+                        });
+                    });
+                    apiReq.on('error', e => resolve({ success: false, error: e.message }));
+                    apiReq.write(postData); apiReq.end();
                 });
+            };
 
-                apiReq.on('error', e => res.end(JSON.stringify({ reply: "❌ 网络请求失败：" + e.message })));
-                apiReq.write(postData); apiReq.end();
+            // 第一步：先试 3.5 Sonnet
+            let result = await callClaude("claude-3-5-sonnet-20241022");
+            
+            // 第二步：如果失败，尝试降级到入门级 3 Haiku
+            if (!result.success) {
+                result = await callClaude("claude-3-haiku-20240307");
+            }
 
-            } catch (e) {
-                res.end(JSON.stringify({ reply: "❌ 系统运行异常，请检查配置。" }));
+            if (result.success) {
+                res.end(JSON.stringify({ reply: result.text }));
+            } else {
+                res.end(JSON.stringify({ reply: "❌ 最终报错：" + result.error }));
             }
         });
     }
