@@ -11,25 +11,37 @@ const server = http.createServer((req, res) => {
             const { message } = JSON.parse(body);
             const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
 
-            // 逻辑 1：先试 Claude
+            // 这里的优化：兼容两种常见的命名方式
+            const claudeKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
+            const dsKey = process.env.DEEPSEEK_API_KEY;
+
+            // 逻辑 1：调用 Claude
             const callClaude = () => new Promise(resolve => {
+                if(!claudeKey) return resolve(null);
                 const postData = JSON.stringify({ model: "claude-3-5-sonnet-latest", max_tokens: 1024, system: sys, messages: [{ role: "user", content: message }] });
                 const reqApi = https.request({
                     hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': claudeKey, 'anthropic-version': '2023-06-01' }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.content ? j.content[0].text : null); } catch(e){ resolve(null); } });
+                    apiRes.on('end', () => { 
+                        try { 
+                            const j = JSON.parse(d); 
+                            if(j.content) resolve(j.content[0].text);
+                            else resolve("Claude 提示: " + (j.error ? j.error.message : "未知错误")); 
+                        } catch(e){ resolve(null); } 
+                    });
                 });
                 reqApi.on('error', () => resolve(null)); reqApi.write(postData); reqApi.end();
             });
 
-            // 逻辑 2：后备 DeepSeek (使用之前填好的 DEEPSEEK_API_KEY)
+            // 逻辑 2：调用 DeepSeek
             const callDeepSeek = () => new Promise(resolve => {
+                if(!dsKey) return resolve(null);
                 const postData = JSON.stringify({ model: "deepseek-chat", messages: [{role:"system", content:sys}, {role:"user", content:message}] });
                 const reqApi = https.request({
                     hostname: 'api.deepseek.com', path: '/chat/completions', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}` }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${dsKey}` }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', c => d += c);
                     apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.choices ? j.choices[0].message.content : null); } catch(e){ resolve(null); } });
@@ -38,9 +50,11 @@ const server = http.createServer((req, res) => {
             });
 
             let reply = await callClaude();
-            if (!reply) {
+            // 如果 Claude 返回了具体的错误（比如权限、额度），我们直接显示，不再跳 DeepSeek，除非 Claude 完全拨不通
+            if (!reply || reply.includes("Claude 提示")) {
                 const dsReply = await callDeepSeek();
-                reply = dsReply ? "[备用通道已开启] " + dsReply : "❌ 哎呀，Claude 权限未就绪，DeepSeek 也暂无响应，请确认 Render 后台两个 Key 是否都填对了。";
+                if (dsReply) reply = "[Claude 暂不可用，已转接 DeepSeek] " + dsReply;
+                else reply = reply || "❌ 所有通道均未拨通，请检查 Render 后台 Key 是否填对。";
             }
             res.end(JSON.stringify({ reply }));
         });
