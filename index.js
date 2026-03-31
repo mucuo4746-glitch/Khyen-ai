@@ -14,14 +14,14 @@ const server = http.createServer((req, res) => {
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jomolhari&family=Noto+Serif+CJK+TC:wght@400;500;700&display=swap');
         body { font-family: "Noto Serif CJK TC", "Jomolhari", serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: #f7f3e8; }
-        header { text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 1px 10px rgba(0,0,0,0.04); z-index: 10; }
+        header { text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 1px 10px rgba(0,0,0,0.04); }
         header h3 { margin: 0; font-size: 1.3rem; color: #5c4b3a; }
         #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-        .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; word-wrap: break-word; white-space: pre-wrap; }
+        .msg { margin: 12px 0; padding: 16px 20px; border-radius: 20px; max-width: 88%; line-height: 1.8; font-size: 1.1rem; }
         .user { background: #5c4b3a; color: #f1d592; align-self: flex-end; }
         .ai { background-color: white; color: #333; align-self: flex-start; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
         #input-container { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        textarea { flex: 1; border: 1px solid #ddd; border-radius: 12px; padding: 12px; font-size: 1rem; resize: none; }
+        textarea { flex: 1; border: 1px solid #ddd; border-radius: 12px; padding: 12px; resize: none; font-family: inherit; }
         button { background: #5c4b3a; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; }
     </style>
 </head>
@@ -29,12 +29,12 @@ const server = http.createServer((req, res) => {
     <header><h3>KHYEN AI མཁྱེན།</h3></header>
     <div id="chat"></div>
     <div id="input-container">
-        <textarea id="text" placeholder="向智者请教..." rows="1"></textarea>
+        <textarea id="text" placeholder="灵魂向导正在归位..." rows="1"></textarea>
         <button onclick="send()">发送</button>
     </div>
     <script>
         const chat = document.getElementById('chat');
-        window.onload = () => add("མཁྱེན་ནོ། 正在激活灵魂向导...\\n两足尊者初降世，七步莲华踏大地。", 'ai');
+        window.onload = () => add("མཁྱེན་ནོ། 正在通过备用通道连接...\\n如果您看到了这段文字，请尝试提问。", 'ai');
         function add(t, type){
             const d = document.createElement('div'); d.className = 'msg ' + type;
             d.innerText = t; chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
@@ -52,24 +52,21 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', c => body += c);
         req.on('end', () => {
             const { message } = JSON.parse(body);
+            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。藏族学者。请用藏汉双语回复。重要术语加粗。";
             
-            const systemPrompt = "你叫 KHYEN AI མཁྱེན།。是一位睿智温暖的藏族学者。玛旁雍错是圣湖，不是人。请用优美的藏汉双语回复。重要术语加粗。";
-            
+            // 💡 临时切回 DeepSeek 通道
             const postData = JSON.stringify({
-                model: "claude-3-haiku-20240307", // 🚀 换成门槛最低的 Haiku 模型
-                max_tokens: 1024,
-                system: systemPrompt,
-                messages: [{ role: "user", content: message }]
+                model: "deepseek-chat",
+                messages: [{ role: "system", content: systemPrompt }, { role: "user", content: message }]
             });
 
             const options = {
-                hostname: 'api.anthropic.com',
-                path: '/v1/messages',
+                hostname: 'api.deepseek.com',
+                path: '/v1/chat/completions',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': process.env.CLAUDE_API_KEY,
-                    'anthropic-version': '2023-06-01'
+                    'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY // 记得确保 Render 里的这个 Key 还在
                 }
             };
 
@@ -78,17 +75,12 @@ const server = http.createServer((req, res) => {
                 apiRes.on('end', () => {
                     try {
                         const json = JSON.parse(d);
-                        if (json.error) {
-                            res.end(JSON.stringify({ reply: "❌ Claude 提示：" + json.error.message }));
-                        } else {
-                            res.end(JSON.stringify({ reply: json.content[0].text }));
-                        }
+                        res.end(JSON.stringify({ reply: json.choices[0].message.content }));
                     } catch (e) {
-                        res.end(JSON.stringify({ reply: '连接略有波动。' }));
+                        res.end(JSON.stringify({ reply: '备用通道也略有波动，请稍后再试。' }));
                     }
                 });
             });
-            apiReq.on('error', (e) => res.end(JSON.stringify({ reply: '失败：' + e.message })));
             apiReq.write(postData); apiReq.end();
         });
     }
