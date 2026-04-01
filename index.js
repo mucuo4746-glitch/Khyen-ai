@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
                 
                 // --- 核心变动：改用门槛最低的 Haiku 模型 ---
                 const postData = JSON.stringify({ 
-                    model: "claude-3-haiku-20240307", 
+                    model: "claude-3-5-haiku-latest",
                     max_tokens: 1024, 
                     system: sys,
                     messages: [{ role: "user", content: message }] 
