@@ -1,10 +1,9 @@
 const http = require('http');
 const https = require('https');
 
-// --- ⚠️ 关键中的关键：请在这里填入完整且正确的 Key ---
-// 必须以 "sk-ant-api03-..." 开头，确认中间没有空格，两边有双引号。
-const MY_ANTHROPIC_KEY = "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";
-const MY_DEEPSEEK_KEY = "sk-CBahM3Cqj0Adl4YD828dEa5e0dB94e4a887bE42980FbA588";
+// --- 关键改变：现在代码会去你的 Environment 变量里找通行证了 ---
+const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+const MY_DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
 
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
@@ -14,25 +13,44 @@ const server = http.createServer((req, res) => {
         let body = ''; req.on('data', x => body += x);
         req.on('end', async () => {
             const { message } = JSON.parse(body);
+            // 设定 Khyen 的人格
             const sys = "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。";
-            const postData = JSON.stringify({ model: "claude-3-5-sonnet-20241022", max_tokens: 1024, system: sys, messages: [{ role: "user", content: message }] });
+            
+            const postData = JSON.stringify({ 
+                model: "claude-3-5-sonnet-20241022", 
+                max_tokens: 1024, 
+                system: sys,
+                messages: [{ role: "user", content: message }] 
+            });
             
             const reqApi = https.request({
                 hostname: 'api.anthropic.com',
                 path: '/v1/messages',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-api-key': MY_ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' }
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'x-api-key': MY_ANTHROPIC_KEY, 
+                    'anthropic-version': '2023-06-01' 
+                }
             }, (apiRes) => {
                 let d = ''; apiRes.on('data', x => d += x);
                 apiRes.on('end', () => {
                     try {
                         const j = JSON.parse(d);
-                        res.end(JSON.stringify({ reply: j.content ? j.content[0].text : "验证失败，请检查 Key。" }));
-                    } catch(e) { res.end(JSON.stringify({ reply: "系统开小差了。" })); }
+                        if (j.error) {
+                            res.end(JSON.stringify({ reply: "智者正忙，请检查 Key 或余额。错误细节: " + j.error.message }));
+                        } else {
+                            res.end(JSON.stringify({ reply: j.content[0].text }));
+                        }
+                    } catch(e) {
+                        res.end(JSON.stringify({ reply: "解析响应失败，请稍后再试。" }));
+                    }
                 });
             });
+
             reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "连接中断: " + e.message })));
-            reqApi.write(postData); reqApi.end();
+            reqApi.write(postData);
+            reqApi.end();
         });
     }
 });
