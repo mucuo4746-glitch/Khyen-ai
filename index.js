@@ -1,6 +1,7 @@
 const http = require('http');
 const https = require('https');
 
+// 从 Render 的 Environment 变量中读取 Key
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
@@ -12,14 +13,15 @@ const server = http.createServer((req, res) => {
         req.on('end', async () => {
             try {
                 const { message } = JSON.parse(body);
-                // 使用最稳固的 3.5 Sonnet 版本号
+                // 1. 替换为最新的模型名称
                 const postData = JSON.stringify({ 
-                    model: "claude-3-haiku-20240307", 
+                    model: "claude-3-5-sonnet-20241022", 
                     max_tokens: 1024, 
                     system: "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。",
                     messages: [{ role: "user", content: message }] 
                 });
                 
+                // 2. 确认 API 请求格式（严格遵循最新规范）
                 const reqApi = https.request({
                     hostname: 'api.anthropic.com',
                     path: '/v1/messages',
@@ -35,7 +37,7 @@ const server = http.createServer((req, res) => {
                         try {
                             const j = JSON.parse(d);
                             if (j.error) {
-                                res.end(JSON.stringify({ reply: "智者正在整理经书。错误提示：" + j.error.message }));
+                                res.end(JSON.stringify({ reply: "智者正在整理经书。细节：" + (j.error.message || j.error.type) }));
                             } else {
                                 res.end(JSON.stringify({ reply: j.content[0].text }));
                             }
