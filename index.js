@@ -14,9 +14,9 @@ const server = http.createServer((req, res) => {
                 const { message } = JSON.parse(body);
                 const sys = "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。";
                 
-                // --- 核心变动：改用门槛最低的 Haiku 模型 ---
+                // --- 既然 Workbench 通了，咱们直接换回最强的 Sonnet！ ---
                 const postData = JSON.stringify({ 
-                    model: "claude-3-5-haiku-latest",
+                    model: "claude-3-5-sonnet-20241022", 
                     max_tokens: 1024, 
                     system: sys,
                     messages: [{ role: "user", content: message }] 
@@ -29,7 +29,8 @@ const server = http.createServer((req, res) => {
                     headers: { 
                         'Content-Type': 'application/json', 
                         'x-api-key': MY_ANTHROPIC_KEY, 
-                        'anthropic-version': '2023-06-01' 
+                        'anthropic-version': '2023-06-01',
+                        'Connection': 'close' // 强制每次请求重新连接，防止缓存
                     }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', x => d += x);
@@ -37,16 +38,17 @@ const server = http.createServer((req, res) => {
                         try {
                             const j = JSON.parse(d);
                             if (j.error) {
-                                res.end(JSON.stringify({ reply: "智者正在禅修，请稍后再试。细节: " + j.error.message }));
+                                // 增强错误提示，看看到底是谁在报错
+                                res.end(JSON.stringify({ reply: "智者云：『" + j.error.message + "』" }));
                             } else {
                                 res.end(JSON.stringify({ reply: j.content[0].text }));
                             }
-                        } catch(e) { res.end(JSON.stringify({ reply: "解析响应失败。" })); }
+                        } catch(e) { res.end(JSON.stringify({ reply: "解析智慧时出了点小差错。" })); }
                     });
                 });
-                reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "连接中断。" })));
+                reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "通往神山的道路暂时中断。" })));
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "请求格式错误。" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "请求处理错误。" })); }
         });
     }
 });
