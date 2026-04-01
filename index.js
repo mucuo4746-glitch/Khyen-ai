@@ -2,7 +2,6 @@ const http = require('http');
 const https = require('https');
 
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const MY_DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
 
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
@@ -15,9 +14,9 @@ const server = http.createServer((req, res) => {
                 const { message } = JSON.parse(body);
                 const sys = "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。";
                 
-                // 关键变动：使用最通用的模型名称
+                // --- 核心变动：改用门槛最低的 Haiku 模型 ---
                 const postData = JSON.stringify({ 
-                    model: "claude-3-5-sonnet-latest", 
+                    model: "claude-3-haiku-20240307", 
                     max_tokens: 1024, 
                     system: sys,
                     messages: [{ role: "user", content: message }] 
@@ -38,7 +37,7 @@ const server = http.createServer((req, res) => {
                         try {
                             const j = JSON.parse(d);
                             if (j.error) {
-                                res.end(JSON.stringify({ reply: "抱歉，由于模型权限问题，智者暂时无法回应。建议稍后再试或更换模型。细节: " + j.error.message }));
+                                res.end(JSON.stringify({ reply: "智者正在禅修，请稍后再试。细节: " + j.error.message }));
                             } else {
                                 res.end(JSON.stringify({ reply: j.content[0].text }));
                             }
@@ -47,7 +46,7 @@ const server = http.createServer((req, res) => {
                 });
                 reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "连接中断。" })));
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "请求处理错误。" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "请求格式错误。" })); }
         });
     }
 });
