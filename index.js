@@ -1,6 +1,7 @@
 const http = require('http');
 const https = require('https');
 
+// --- 终极排查逻辑 ---
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
@@ -10,45 +11,40 @@ const server = http.createServer((req, res) => {
     } else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = ''; req.on('data', x => body += x);
         req.on('end', async () => {
+            if (!MY_ANTHROPIC_KEY || MY_ANTHROPIC_KEY.length < 10) {
+                res.end(JSON.stringify({ reply: "⚠️ 警报：服务器没能读取到你的 Key！请检查 Render 的 Environment 变量名是否叫 ANTHROPIC_API_KEY。" }));
+                return;
+            }
             try {
                 const { message } = JSON.parse(body);
-                const sys = "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。";
-                
-                // --- 既然 Workbench 通了，咱们直接换回最强的 Sonnet！ ---
                 const postData = JSON.stringify({ 
                     model: "claude-3-5-sonnet-20241022", 
                     max_tokens: 1024, 
-                    system: sys,
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。",
                     messages: [{ role: "user", content: message }] 
                 });
-                
                 const reqApi = https.request({
                     hostname: 'api.anthropic.com',
                     path: '/v1/messages',
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 
-                        'x-api-key': MY_ANTHROPIC_KEY, 
-                        'anthropic-version': '2023-06-01',
-                        'Connection': 'close' // 强制每次请求重新连接，防止缓存
+                        'x-api-key': MY_ANTHROPIC_KEY.trim(), 
+                        'anthropic-version': '2023-06-01'
                     }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', x => d += x);
                     apiRes.on('end', () => {
-                        try {
-                            const j = JSON.parse(d);
-                            if (j.error) {
-                                // 增强错误提示，看看到底是谁在报错
-                                res.end(JSON.stringify({ reply: "智者云：『" + j.error.message + "』" }));
-                            } else {
-                                res.end(JSON.stringify({ reply: j.content[0].text }));
-                            }
-                        } catch(e) { res.end(JSON.stringify({ reply: "解析智慧时出了点小差错。" })); }
+                        const j = JSON.parse(d);
+                        if (j.error) {
+                            res.end(JSON.stringify({ reply: "智者闭关中，错误代码：" + j.error.type }));
+                        } else {
+                            res.end(JSON.stringify({ reply: j.content[0].text }));
+                        }
                     });
                 });
-                reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "通往神山的道路暂时中断。" })));
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "请求处理错误。" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "逻辑电路阻断。" })); }
         });
     }
 });
