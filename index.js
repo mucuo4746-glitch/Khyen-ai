@@ -14,7 +14,7 @@ const server = http.createServer((req, res) => {
                 const { message } = JSON.parse(body);
                 // 使用最稳固的 3.5 Sonnet 版本号
                 const postData = JSON.stringify({ 
-                    model: "claude-3-5-sonnet-20240620", 
+                    model: "claude-3-haiku-20240307", 
                     max_tokens: 1024, 
                     system: "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。",
                     messages: [{ role: "user", content: message }] 
