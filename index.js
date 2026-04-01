@@ -1,6 +1,10 @@
 const http = require('http');
 const https = require('https');
 
+// --- 强制测试区域：请在这里直接填入你的 Key ---
+const MY_ANTHROPIC_KEY = "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";
+const MY_DEEPSEEK_KEY = "sk-CBahM3Cqj0Adl4YD828dEa5e0dB94e4a887bE42980FbA588";
+
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -11,45 +15,44 @@ const server = http.createServer((req, res) => {
             const { message } = JSON.parse(body);
             const sys = "你叫 KHYEN AI མཁྱེན།。博学睿智。请用藏汉双语回复。";
 
-            // 核心逻辑：逐个尝试 Claude 的不同模型别名
-            const models = ["claude-3-5-sonnet-latest", "claude-3-5-sonnet-20240620", "claude-3-haiku-20240307"];
-            
-            const callClaude = (modelName) => new Promise(resolve => {
-                const postData = JSON.stringify({ model: modelName, max_tokens: 1024, system: sys, messages: [{ role: "user", content: message }] });
-                const reqApi = https.request({
-                    hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }
-                }, (apiRes) => {
+            const callApi = (hostname, path, headers, postData) => new Promise(resolve => {
+                const reqApi = https.request({ hostname, path, method: 'POST', headers }, (apiRes) => {
                     let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.content ? j.content[0].text : "ERR:" + j.error.type); } catch(e){ resolve("ERR:parse"); } });
+                    apiRes.on('end', () => resolve(d));
                 });
-                reqApi.on('error', () => resolve("ERR:net")); reqApi.write(postData); reqApi.end();
+                reqApi.on('error', (e) => resolve("NET_ERR:" + e.message));
+                reqApi.write(postData); reqApi.end();
             });
 
-            const callDeepSeek = () => new Promise(resolve => {
-                const postData = JSON.stringify({ model: "deepseek-chat", messages: [{role:"system", content:sys}, {role:"user", content:message}] });
-                const reqApi = https.request({
-                    hostname: 'api.deepseek.com', path: '/chat/completions', method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}` }
-                }, (apiRes) => {
-                    let d = ''; apiRes.on('data', c => d += c);
-                    apiRes.on('end', () => { try { const j = JSON.parse(d); resolve(j.choices ? j.choices[0].message.content : "DS_ERR"); } catch(e){ resolve("DS_ERR"); } });
-                });
-                reqApi.on('error', () => resolve("DS_ERR")); reqApi.write(postData); reqApi.end();
-            });
+            // 1. 尝试 Claude
+            const claudeData = JSON.stringify({ model: "claude-3-5-sonnet-20241022", max_tokens: 1024, system: sys, messages: [{ role: "user", content: message }] });
+            let result = await callApi('api.anthropic.com', '/v1/messages', { 
+                'Content-Type': 'application/json', 'x-api-key': MY_ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' 
+            }, claudeData);
 
-            let reply = "";
-            for (let m of models) {
-                reply = await callClaude(m);
-                if (!reply.startsWith("ERR:")) break; // 只要有一个模型通了，就收工
-            }
+            try {
+                const j = JSON.parse(result);
+                if (j.content) {
+                    res.end(JSON.stringify({ reply: j.content[0].text }));
+                    return;
+                }
+            } catch(e) {}
 
-            if (reply.startsWith("ERR:")) {
-                const dsReply = await callDeepSeek();
-                reply = dsReply !== "DS_ERR" ? "[Claude 握手失败，已转接 DeepSeek] " + dsReply : "⚠️ 所有模型均未响应。请检查 Render 后台 Key 填写的空格或特殊字符。";
-            }
-            
-            res.end(JSON.stringify({ reply }));
+            // 2. 如果 Claude 失败，尝试 DeepSeek
+            const dsData = JSON.stringify({ model: "deepseek-chat", messages: [{role:"system", content:sys}, {role:"user", content:message}] });
+            let dsResult = await callApi('api.deepseek.com', '/chat/completions', {
+                'Content-Type': 'application/json', 'Authorization': `Bearer ${MY_DEEPSEEK_KEY}`
+            }, dsData);
+
+            try {
+                const dj = JSON.parse(dsResult);
+                if (dj.choices) {
+                    res.end(JSON.stringify({ reply: "[由 DeepSeek 强力驱动] " + dj.choices[0].message.content }));
+                    return;
+                }
+            } catch(e) {}
+
+            res.end(JSON.stringify({ reply: "⚠️ 强制测试报告：\nClaude 返回：" + result + "\nDeepSeek 返回：" + dsResult }));
         });
     }
 });
