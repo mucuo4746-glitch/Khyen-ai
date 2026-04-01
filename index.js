@@ -1,7 +1,6 @@
 const http = require('http');
 const https = require('https');
 
-// --- 终极排查逻辑 ---
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
@@ -11,21 +10,19 @@ const server = http.createServer((req, res) => {
     } else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = ''; req.on('data', x => body += x);
         req.on('end', async () => {
-            if (!MY_ANTHROPIC_KEY || MY_ANTHROPIC_KEY.length < 10) {
-                res.end(JSON.stringify({ reply: "⚠️ 警报：服务器没能读取到你的 Key！请检查 Render 的 Environment 变量名是否叫 ANTHROPIC_API_KEY。" }));
-                return;
-            }
             try {
                 const { message } = JSON.parse(body);
+                // 使用在 Workbench 测试通过的模型别名
                 const postData = JSON.stringify({ 
-                    model: "claude-3-5-sonnet-20241022", 
+                    model: "claude-3-5-sonnet-latest", 
                     max_tokens: 1024, 
                     system: "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。",
                     messages: [{ role: "user", content: message }] 
                 });
+                
                 const reqApi = https.request({
                     hostname: 'api.anthropic.com',
-                    path: '/v1/messages',
+                    path: '/v1/messages', // 确保路径纯净
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 
@@ -35,16 +32,19 @@ const server = http.createServer((req, res) => {
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', x => d += x);
                     apiRes.on('end', () => {
-                        const j = JSON.parse(d);
-                        if (j.error) {
-                            res.end(JSON.stringify({ reply: "智者闭关中，错误代码：" + j.error.type }));
-                        } else {
-                            res.end(JSON.stringify({ reply: j.content[0].text }));
-                        }
+                        try {
+                            const j = JSON.parse(d);
+                            if (j.error) {
+                                res.end(JSON.stringify({ reply: "智者正在整理经书，请稍后再试。细节：" + j.error.message }));
+                            } else {
+                                res.end(JSON.stringify({ reply: j.content[0].text }));
+                            }
+                        } catch(e) { res.end(JSON.stringify({ reply: "解析响应失败。" })); }
                     });
                 });
+                reqApi.on('error', (e) => res.end(JSON.stringify({ reply: "连接中断。" })));
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "逻辑电路阻断。" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "处理请求时出错。" })); }
         });
     }
 });
