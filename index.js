@@ -6,10 +6,11 @@ const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        // 旗舰版 UI：赭红顶部、宣纸背景、完美字体
         res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KHYEN AI མཁྱེན།</title>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
-            body { font-family: "Noto Serif SC", "Noto Serif Tibetan", serif; background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; }
+            body { font-family: "Noto Serif SC", "Noto Serif Tibetan", serif; text-rendering: optimizeLegibility; background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; }
             #header { background: #8e2323; color: #f7f3e8; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2em; }
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
             .m { max-width: 85%; padding: 12px 18px; border-radius: 15px; line-height: 1.8; word-wrap: break-word; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -42,11 +43,11 @@ const server = http.createServer((req, res) => {
                     if(!v) return;
                     add(v, 'u');
                     document.getElementById('t').value = '';
-                    const loader = add('智者正在斟酌...', 'a');
+                    const loader = add('智者正在回溯...', 'a');
                     try {
                         const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message: v }) });
                         const data = await r.json();
-                        if (data.error) { loader.innerText = '智者正在休息中：' + data.error; }
+                        if (data.error) { loader.innerText = '智者觉察到偏差：' + data.error; }
                         else { loader.innerHTML = marked.parse(data.reply); }
                     } catch(e) { loader.innerText = '连接稍有延迟，请稍后再试。'; }
                 }
@@ -56,11 +57,11 @@ const server = http.createServer((req, res) => {
         req.on('end', async () => {
             try {
                 const { message } = JSON.parse(body);
-                // 这里改成了最稳健的 3-haiku-20240307 版本，确保不会 404
+                // 重新锁定 Haiku 4.5，并兼容其参数结构
                 const postData = JSON.stringify({ 
-                    model: "claude-3-haiku-20240307", 
+                    model: "claude-haiku-4-5-20251001", 
                     max_tokens: 2048,
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语的优美感。使用 Markdown 格式让内容立体清晰。",
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语。使用 Markdown 格式。",
                     messages: [{ role: "user", content: message }] 
                 });
                 const reqApi = https.request({
@@ -79,12 +80,11 @@ const server = http.createServer((req, res) => {
                             const j = JSON.parse(d);
                             if (j.error) { res.end(JSON.stringify({ error: j.error.message })); }
                             else { res.end(JSON.stringify({ reply: j.content[0].text })); }
-                        } catch(e) { res.end(JSON.stringify({ error: "数据解析异常。" })); }
+                        } catch(e) { res.end(JSON.stringify({ error: "解析偏差。" })); }
                     });
                 });
-                reqApi.on('error', (e) => { res.end(JSON.stringify({ error: e.message })); });
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ error: "请求发送失败。" })); }
+            } catch(e) { res.end(JSON.stringify({ error: "通道未开启。" })); }
         });
     }
 });
