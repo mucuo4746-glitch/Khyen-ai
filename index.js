@@ -6,17 +6,66 @@ const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>KHYEN AI མཁྱེན།</title><style>body{font-family:serif;background:#f7f3e8;display:flex;flex-direction:column;height:100vh;margin:0}#chat{flex:1;overflow-y:auto;padding:20px}#input{padding:20px;background:white;border-top:1px solid #ddd;display:flex}textarea{flex:1;padding:12px;border-radius:8px;border:1px solid #ccc;font-size:16px;outline:none}button{background:#5c4b3a;color:white;padding:10px 20px;margin-left:10px;border-radius:8px;border:none;cursor:pointer;font-weight:bold}</style></head><body><div id="chat"></div><div id="input"><textarea id="t" placeholder="向智者请教..."></textarea><button onclick="s()">发送</button></div><script>const c=document.getElementById('chat');function a(t,y){const d=document.createElement('div');d.innerText=t;d.style.margin='15px 0';d.style.padding='12px';d.style.lineHeight='1.6';d.style.background=y==='u'?'#eee':'white';d.style.borderRadius='8px';d.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';c.appendChild(d);c.scrollTop=c.scrollHeight}async function s(){const v=document.getElementById('t').value;if(!v)return;a('我: '+v,'u');document.getElementById('t').value='';a('正在连接 2026 智者...','a');try {const r=await fetch('/api/chat',{method:'POST',body:JSON.stringify({message:v})});const d=await r.json();if(c.lastChild)c.lastChild.remove();a('KHYEN: '+d.reply,'a')} catch(e) { if(c.lastChild)c.lastChild.remove();a('KHYEN: 智者尚未出关。','a')}}</script></body></html>`);
+        // 升级版 UI：加入了现代化的气泡流、Markdown 解析脚本和藏文优化 CSS
+        res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KHYEN AI མཁྱེན།</title>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <style>
+            body { font-family: "Noto Serif SC", "Microsoft YaHei", serif; background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; }
+            #header { background: #8e2323; color: #f7f3e8; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2em; }
+            #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+            .m { max-width: 85%; padding: 12px 18px; border-radius: 15px; line-height: 1.8; word-wrap: break-word; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            .u { align-self: flex-end; background: #e6d5b8; color: #3d2b1f; border-bottom-right-radius: 2px; }
+            .a { align-self: flex-start; background: #fff; color: #222; border-bottom-left-radius: 2px; border: 1px solid #eee; }
+            /* 专门为藏文优化的行高 */
+            .a p, .a div { margin: 8px 0; line-height: 2.2; }
+            #input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+            textarea { flex: 1; height: 50px; border: 1px solid #ddd; border-radius: 12px; padding: 10px; font-size: 16px; resize: none; outline: none; transition: 0.3s; }
+            textarea:focus { border-color: #8e2323; }
+            button { background: #8e2323; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+            button:hover { background: #5c1616; transform: scale(1.05); }
+            .loading { color: #888; font-style: italic; font-size: 0.9em; margin-left: 5px; }
+        </style></head>
+        <body>
+            <div id="header">མཁྱེན། KHYEN AI 智者</div>
+            <div id="chat"></div>
+            <div id="input-area">
+                <textarea id="t" placeholder="输入您的问题 (支持汉/藏/英)..."></textarea>
+                <button onclick="s()">咨询</button>
+            </div>
+            <script>
+                const c = document.getElementById('chat');
+                function add(msg, type) {
+                    const d = document.createElement('div');
+                    d.className = 'm ' + type;
+                    // 使用 marked 解析 Markdown 格式
+                    d.innerHTML = type === 'a' ? marked.parse(msg) : msg;
+                    c.appendChild(d);
+                    c.scrollTop = c.scrollHeight;
+                    return d;
+                }
+                async function s() {
+                    const v = document.getElementById('t').value;
+                    if(!v) return;
+                    add(v, 'u');
+                    document.getElementById('t').value = '';
+                    const loader = add('མཁྱེན། 智者正在聆听...', 'a');
+                    try {
+                        const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message: v }) });
+                        const data = await r.json();
+                        loader.innerHTML = marked.parse(data.reply);
+                    } catch(e) { loader.innerText = '连接中断。'; }
+                    c.scrollTop = c.scrollHeight;
+                }
+            </script></body></html>`);
     } else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = ''; req.on('data', x => body += x);
         req.on('end', async () => {
             try {
                 const { message } = JSON.parse(body);
-                // 采用 2026 最新的 Haiku 4.5 模型
                 const postData = JSON.stringify({ 
                     model: "claude-haiku-4-5-20251001", 
-                    max_tokens: 1024, 
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位精通藏汉文化的睿智导师。请务必使用藏汉双语回复。",
+                    max_tokens: 2048, // 增加输出长度
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦逊的导师，深谙藏、汉、英三方文化。请根据用户的提问语言进行针对性回复，但在回复中始终保留藏汉双语的智慧精华。使用 Markdown 格式让排版整洁。",
                     messages: [{ role: "user", content: message }] 
                 });
                 
@@ -27,25 +76,19 @@ const server = http.createServer((req, res) => {
                     headers: { 
                         'Content-Type': 'application/json', 
                         'x-api-key': MY_ANTHROPIC_KEY.trim(), 
-                        'anthropic-version': '2023-06-01' // 基础协议版本未变
+                        'anthropic-version': '2023-06-01'
                     }
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', x => d += x);
                     apiRes.on('end', () => {
-                        console.log('--- 2026 API 实时响应 ---');
-                        console.log('Status:', apiRes.statusCode);
                         try {
                             const j = JSON.parse(d);
-                            if (j.error) {
-                                res.end(JSON.stringify({ reply: "反馈：" + j.error.message }));
-                            } else {
-                                res.end(JSON.stringify({ reply: j.content[0].text }));
-                            }
-                        } catch(e) { res.end(JSON.stringify({ reply: "解析新模型失败。" })); }
+                            res.end(JSON.stringify({ reply: j.content[0].text }));
+                        } catch(e) { res.end(JSON.stringify({ reply: "智者沉思中，请稍后再试。" })); }
                     });
                 });
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "系统异常。" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "系统开小差了。" })); }
         });
     }
 });
