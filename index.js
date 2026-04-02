@@ -8,31 +8,33 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KHYEN AI མཁྱེན།</title>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tibetan:wght@400;700&display=swap" rel="stylesheet">
         <style>
-            /* 1. 全局：优先锁定藏文字体，关闭强制断句 */
+            /* 1. 核心修复：强制电脑端优先使用云端字体，并开启叠字渲染 */
             body { 
-                font-family: "Microsoft Himalaya", "Noto Serif SC", "Noto Serif Tibetan", serif; 
-                text-rendering: optimizeLegibility; 
+                font-family: 'Noto Sans Tibetan', 'Microsoft Himalaya', "Noto Serif SC", serif; 
+                -webkit-font-smoothing: antialiased;
+                font-variant-ligatures: common-ligatures;
+                font-feature-settings: "tibt" 1; /* 强行开启藏文特性 */
                 background: #fdfbf7; 
                 margin: 0; 
                 display: flex; 
                 flex-direction: column; 
                 height: 100vh; 
                 color: #3d2b1f; 
-                -webkit-font-smoothing: antialiased;
             }
 
             #header { background: rgba(142, 35, 35, 0.95); backdrop-filter: blur(10px); color: #f7f3e8; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); font-weight: bold; font-size: 1.2em; position: sticky; top: 0; z-index: 100; }
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
             
-            /* 2. 气泡优化：防止藏文在电脑上乱断行 */
+            /* 2. 气泡加固：禁止电脑端中途断开藏文词组 */
             .m { 
                 max-width: 88%; 
                 padding: 16px 20px; 
                 border-radius: 20px; 
                 line-height: 2.2; 
                 word-wrap: break-word; 
-                word-break: keep-all; /* 关键：防止藏文单词被切断 */
+                overflow-wrap: break-word;
                 font-size: 17px; 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
                 animation: fadeInUp 0.4s ease-out; 
@@ -41,21 +43,19 @@ const server = http.createServer((req, res) => {
             
             .u { align-self: flex-end; background: #e6d5b8; color: #3d2b1f; border-bottom-right-radius: 4px; }
             
-            /* 3. 智者回复：电脑和手机的平衡点 */
             .a { align-self: flex-start; background: #fff; color: #222; border-bottom-left-radius: 4px; border: 1px solid #f0f0f0; }
-            .a p { margin: 12px 0; line-height: 2.4; white-space: pre-wrap; } /* 保持空格和换行 */
+            .a p { margin: 12px 0; line-height: 2.5; } /* 保持呼吸感 */
             
-            /* 4. 针对电脑端的特别加固 */
+            /* 3. 针对大屏幕电脑的特别约束 */
             @media (min-width: 768px) {
-                .m { max-width: 70%; line-height: 1.8; } /* 电脑端稍微收紧，防止太稀疏 */
-                .a p { line-height: 2.0; }
+                .m { max-width: 70%; line-height: 2.0; }
+                .a p { line-height: 2.2; }
             }
 
-            #input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 12px; align-items: center; position: sticky; bottom: 0; }
+            #input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 12px; align-items: center; }
             textarea { flex: 1; height: 50px; border: 1.5px solid #f0f0f0; border-radius: 15px; padding: 12px; font-size: 16px; resize: none; outline: none; transition: 0.3s; background: #fcfcfc; }
             textarea:focus { border-color: #8e2323; background: #fff; }
-            button { background: #8e2323; color: white; border: none; padding: 10px 24px; border-radius: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; min-width: 80px; }
-            button:hover { background: #5c1616; transform: scale(1.02); }
+            button { background: #8e2323; color: white; border: none; padding: 10px 24px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; min-width: 80px; }
         </style></head>
         <body>
             <div id="header">མཁྱེན། KHYEN AI 智者</div>
@@ -96,7 +96,7 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({ 
                     model: "claude-haiku-4-5-20251001", 
                     max_tokens: 2048,
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语。使用 Markdown 格式。对话时请展现出耐心与智慧。",
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语。使用 Markdown 格式。",
                     messages: [{ role: "user", content: message }] 
                 });
                 const reqApi = https.request({
