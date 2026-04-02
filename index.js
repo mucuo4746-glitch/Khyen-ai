@@ -46,8 +46,9 @@ const server = http.createServer((req, res) => {
                     try {
                         const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message: v }) });
                         const data = await r.json();
-                        loader.innerHTML = marked.parse(data.reply);
-                    } catch(e) { loader.innerText = '连接中断。'; }
+                        if (data.error) { loader.innerText = '智者正在休息中：' + data.error; }
+                        else { loader.innerHTML = marked.parse(data.reply); }
+                    } catch(e) { loader.innerText = '连接稍有延迟，请稍后再试。'; }
                 }
             </script></body></html>`);
     } else if (req.url === '/api/chat' && req.method === 'POST') {
@@ -55,10 +56,11 @@ const server = http.createServer((req, res) => {
         req.on('end', async () => {
             try {
                 const { message } = JSON.parse(body);
+                // 这里改成了最稳健的 3-haiku-20240307 版本，确保不会 404
                 const postData = JSON.stringify({ 
-                    model: "claude-3-5-haiku-20241022", 
+                    model: "claude-3-haiku-20240307", 
                     max_tokens: 2048,
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语的优美感。使用 Markdown 格式。",
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。请根据用户的语言回复，始终保持藏汉双语的优美感。使用 Markdown 格式让内容立体清晰。",
                     messages: [{ role: "user", content: message }] 
                 });
                 const reqApi = https.request({
@@ -73,12 +75,16 @@ const server = http.createServer((req, res) => {
                 }, (apiRes) => {
                     let d = ''; apiRes.on('data', x => d += x);
                     apiRes.on('end', () => {
-                        const j = JSON.parse(d);
-                        res.end(JSON.stringify({ reply: j.content[0].text }));
+                        try {
+                            const j = JSON.parse(d);
+                            if (j.error) { res.end(JSON.stringify({ error: j.error.message })); }
+                            else { res.end(JSON.stringify({ reply: j.content[0].text })); }
+                        } catch(e) { res.end(JSON.stringify({ error: "数据解析异常。" })); }
                     });
                 });
+                reqApi.on('error', (e) => { res.end(JSON.stringify({ error: e.message })); });
                 reqApi.write(postData); reqApi.end();
-            } catch(e) { res.end(JSON.stringify({ reply: "系统忙。" })); }
+            } catch(e) { res.end(JSON.stringify({ error: "请求发送失败。" })); }
         });
     }
 });
