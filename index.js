@@ -10,17 +10,64 @@ const server = http.createServer((req, res) => {
         res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KHYEN AI མཁྱེན།</title>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
-            body { font-family: "Noto Serif SC", "Noto Serif Tibetan", serif; text-rendering: optimizeLegibility; background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; }
-            #header { background: #8e2323; color: #f7f3e8; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2em; }
+        <style>
+            /* 1. 基础布局：宣纸背景 */
+            body { 
+                font-family: "Noto Serif SC", "Noto Serif Tibetan", serif; 
+                background: #fdfbf7; 
+                margin: 0; 
+                display: flex; 
+                flex-direction: column; 
+                height: 100vh; 
+                color: #3d2b1f; 
+            }
+
+            /* 2. 顶部栏：升级为磨砂玻璃质感的赭红色 */
+            #header { 
+                background: rgba(142, 35, 35, 0.95); 
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                color: #f7f3e8; 
+                padding: 15px; 
+                text-align: center; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+                font-weight: bold; 
+                font-size: 1.2em; 
+                position: sticky; 
+                top: 0; 
+                z-index: 100;
+            }
+
+            /* 3. 对话区域 */
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-            .m { max-width: 85%; padding: 12px 18px; border-radius: 15px; line-height: 1.8; word-wrap: break-word; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+            /* 4. 对话气泡：添加淡入升起的动画感 */
+            .m { 
+                max-width: 85%; 
+                padding: 12px 18px; 
+                border-radius: 18px; 
+                line-height: 1.8; 
+                font-size: 16px; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                animation: fadeInUp 0.4s ease-out; /* 灵感动画 */
+            }
+
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(15px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
             .u { align-self: flex-end; background: #e6d5b8; color: #3d2b1f; border-bottom-right-radius: 2px; }
             .a { align-self: flex-start; background: #fff; color: #222; border-bottom-left-radius: 2px; border: 1px solid #eee; }
             .a p { margin: 8px 0; line-height: 2.2; }
-            #input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
-            textarea { flex: 1; height: 50px; border: 1px solid #ddd; border-radius: 12px; padding: 10px; font-size: 16px; resize: none; outline: none; }
-            button { background: #8e2323; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        </style></head>
+
+            /* 5. 输入区域：更精致的圆角 */
+            #input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+            textarea { flex: 1; height: 50px; border: 1px solid #eee; border-radius: 15px; padding: 12px; font-size: 16px; resize: none; outline: none; transition: 0.3s; background: #f9f9f9; }
+            textarea:focus { border-color: #8e2323; background: #fff; }
+            button { background: #8e2323; color: white; border: none; padding: 10px 22px; border-radius: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+            button:hover { background: #5c1616; transform: scale(1.03); }
+        </style>        </style></head>
         <body>
             <div id="header">མཁྱེན། KHYEN AI 智者</div>
             <div id="chat"></div>
