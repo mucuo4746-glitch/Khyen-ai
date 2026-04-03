@@ -40,7 +40,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 /* 对话页 */
 #app{display:none;flex-direction:column;height:100vh}
 #header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.h-title{font-weight:bold;font-size:1em}
+.h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
 .h-btns{display:flex;gap:6px}
 .hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
@@ -70,7 +70,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <div class="l-feats">
     <div class="feat"><div class="feat-i">🔤</div><div class="feat-t">翻译</div><div class="feat-b">ཡིག་བསྒྱུར།</div></div>
     <div class="feat"><div class="feat-i">📚</div><div class="feat-t">文化</div><div class="feat-b">རིག་གཞུང་།</div></div>
-    <div class="feat"><div class="feat-i">☸️</div><div class="feat-t">佛法</div><div class="feat-b">ཆོས།</div></div>
+    <div class="feat"><div class="feat-i">☸️</div><div class="feat-t">佛法</div><div class="feat-b">དམ་ཆོས།</div></div>
     <div class="feat"><div class="feat-i">🗓️</div><div class="feat-t">节日</div><div class="feat-b">དུས་ཆེན།</div></div>
   </div>
   <button class="l-btn" id="enter-btn">进入 · Enter</button>
