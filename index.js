@@ -5,27 +5,31 @@ const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
+        // [修复2] 确认服务器返回的 Content-Type 包含 charset=utf-8
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(`<!DOCTYPE html><html lang="bo"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>KHYEN AI མཁྱེན།</title>
+        res.end(`<!DOCTYPE html><html lang="zh"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>KHYEN AI མཁྱེན།</title>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tibetan:wght@400;700&display=swap" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
             :root { --main-red: #8e2323; --bg-cream: #fdfbf7; --text-brown: #3d2b1f; }
-            body { font-family: 'Noto Serif Tibetan', serif; background: var(--bg-cream); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-brown); -webkit-font-smoothing: antialiased; }
+            body { font-family: "Noto Serif SC", serif; background: var(--bg-cream); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-brown); -webkit-font-smoothing: antialiased; }
             #header { background: var(--main-red); color: #f7f3e8; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
             .m { 
                 max-width: 88%; padding: 18px 24px; border-radius: 18px; 
-                line-height: 2.6; font-size: 20px; position: relative; 
-                box-shadow: 0 4px 15px rgba(0,0,0,0.05); user-select: text;
-                /* 深度修复：确保藏文不乱断行 */
+                /* [修复3] 前端显示藏文的 CSS 规则 */
+                font-family: 'Noto Serif Tibetan', serif; 
+                line-height: 2.5; 
                 word-break: keep-all; 
                 white-space: pre-wrap;
-                overflow-wrap: break-word;
+                position: relative; 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05); user-select: text;
             }
             .u { align-self: flex-end; background: #e6d5b8; border-bottom-right-radius: 4px; }
             .a { align-self: flex-start; background: #fff; border: 1px solid #eee; border-bottom-left-radius: 4px; }
-            /* 强制让藏文段落有更大的行高和独立性 */
             .a p { margin: 12px 0; }
             #input-area { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
             textarea { flex: 1; height: 48px; border: 1px solid #ddd; border-radius: 15px; padding: 12px; font-size: 16px; outline: none; resize: none; }
@@ -70,7 +74,7 @@ const server = http.createServer((req, res) => {
                         loader.innerHTML = marked.parse(data.reply);
                         h.push({ role: 'assistant', content: data.reply });
                         if (h.length > 20) h = h.slice(-20);
-                    } catch(e) { loader.innerText = '连接稍有延迟。'; }
+                    } catch(e) { loader.innerText = '智者正在冥想。'; }
                     c.scrollTop = c.scrollHeight;
                 }
             </script></body></html>`);
@@ -83,14 +87,8 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "claude-haiku-4-5-20251001",
                     max_tokens: 4096,
-                    system: `你叫 KHYEN AI མཁྱེན།。是一位睿智导师。
-                    请严格遵守以下藏语使用规则：
-                    1. 默认用中文回答，除非用户专门用藏文提问。
-                    2. 需要引用藏文时，只使用已存在的经典原文，绝对不要自己造句或拼凑翻译。
-                    3. 不要用音译硬造藏文词汇。如果不确定写法，直接用中文代替。
-                    4. 引用经典必须保持原文完整，包含正确的音节点（་）。
-                    5. 藏文和中文混合回答时，藏文段落必须【单独成行】，严禁与中文混在同一行内。
-                    6. 语气温和，使用 Markdown。`,
+                    // [修复 5-9] 注入 System Prompt 逻辑
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智导师。请一次性遵守以下规则：1. 默认用中文回答，除非用户专门用藏文提问。2. 只引用经典原文藏文，绝对不要自己造句或拼凑翻译。3. 不确定藏文写法时直接用中文，绝不猜测。4. 藏文输出必须包含正确音节点（་），格式完整。5. 藏文段落必须【单独成行】，不与中文混排。6. 语气温和有礼，使用 Markdown 格式。",
                     messages: messages
                 });
                 const reqApi = https.request({
