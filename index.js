@@ -15,22 +15,24 @@ const server = http.createServer((req, res) => {
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
             :root { --main-red: #8e2323; --bg-cream: #fdfbf7; --text-brown: #3d2b1f; }
-            body { font-family: "Noto Serif SC", serif; background: var(--bg-cream); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-brown); -webkit-font-smoothing: antialiased; }
+            body { font-family: "Noto Serif SC", "Microsoft YaHei", serif; background: var(--bg-cream); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-brown); -webkit-font-smoothing: antialiased; }
             #header { background: var(--main-red); color: #f7f3e8; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
             .m { 
                 max-width: 88%; padding: 18px 24px; border-radius: 18px; 
-                /* [修复3] 前端显示藏文的 CSS 规则 */
+                /* [修复3] 前端显示藏文的核心 CSS */
                 font-family: 'Noto Serif Tibetan', serif; 
                 line-height: 2.5; 
                 word-break: keep-all; 
                 white-space: pre-wrap;
+                overflow-wrap: break-word;
                 position: relative; 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.05); user-select: text;
             }
+            /* 强制对藏文段落进行视觉隔离，防止乱行 */
+            .a p { margin: 15px 0; display: block; clear: both; }
             .u { align-self: flex-end; background: #e6d5b8; border-bottom-right-radius: 4px; }
             .a { align-self: flex-start; background: #fff; border: 1px solid #eee; border-bottom-left-radius: 4px; }
-            .a p { margin: 12px 0; }
             #input-area { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
             textarea { flex: 1; height: 48px; border: 1px solid #ddd; border-radius: 15px; padding: 12px; font-size: 16px; outline: none; resize: none; }
             button { background: var(--main-red); color: white; border: none; padding: 12px 25px; border-radius: 15px; font-weight: bold; cursor: pointer; }
@@ -74,7 +76,7 @@ const server = http.createServer((req, res) => {
                         loader.innerHTML = marked.parse(data.reply);
                         h.push({ role: 'assistant', content: data.reply });
                         if (h.length > 20) h = h.slice(-20);
-                    } catch(e) { loader.innerText = '智者正在冥想。'; }
+                    } catch(e) { loader.innerText = '连接中断。'; }
                     c.scrollTop = c.scrollHeight;
                 }
             </script></body></html>`);
@@ -87,8 +89,16 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "claude-haiku-4-5-20251001",
                     max_tokens: 4096,
-                    // [修复 5-9] 注入 System Prompt 逻辑
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智导师。请一次性遵守以下规则：1. 默认用中文回答，除非用户专门用藏文提问。2. 只引用经典原文藏文，绝对不要自己造句或拼凑翻译。3. 不确定藏文写法时直接用中文，绝不猜测。4. 藏文输出必须包含正确音节点（་），格式完整。5. 藏文段落必须【单独成行】，不与中文混排。6. 语气温和有礼，使用 Markdown 格式。",
+                    // [修复 5-9] 融合 Claude 的所有核心要求
+                    system: `你叫 KHYEN AI མཁྱེན།。是一位睿智、严谨的导师。
+                    请一次性遵守以下规则（不可违背）：
+                    1. 默认仅使用中文回答。只有当用户明确使用藏文提问时，才使用藏文回答。
+                    2. 禁止自己造句或拼凑藏文，只能引用已存在的经典原文。
+                    3. 不确定藏文写法时直接用中文，绝对严禁猜测！
+                    4. 藏文输出必须包含正确的音节点(་)，确保格式完整无误。
+                    5. 藏文段落必须【单独成行】，严禁与中文混排在同一行。
+                    6. 严格保持藏汉双语逻辑，禁止复读用户的藏文提问。
+                    7. 语气温和、谦虚，使用 Markdown 格式。`,
                     messages: messages
                 });
                 const reqApi = https.request({
