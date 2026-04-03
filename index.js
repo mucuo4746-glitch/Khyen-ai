@@ -6,20 +6,32 @@ const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>KHYEN AI མཁྱེན།</title>
+        </head>res.end(`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>KHYEN AI མཁྱེན།</title>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tibetan:wght@400;700&display=swap" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
-            body { font-family: "Noto Serif SC", "Noto Serif Tibetan", serif; background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; -webkit-font-smoothing: antialiased; }
-            #header { background: #8e2323; color: #f7f3e8; padding: 15px; text-align: center; font-weight: bold; font-size: 1.1em; position: sticky; top: 0; z-index: 100; }
-            #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; -webkit-overflow-scrolling: touch; }
-            .m { max-width: 85%; padding: 12px 16px; border-radius: 18px; line-height: 2.4; font-size: 17px; word-wrap: break-word; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-            .u { align-self: flex-end; background: #e6d5b8; color: #3d2b1f; border-bottom-right-radius: 4px; }
-            .a { align-self: flex-start; background: #fff; border: 1px solid #eee; border-bottom-left-radius: 4px; }
-            .a p { margin: 8px 0; line-height: 2.4; }
-            #input-area { padding: 10px 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px; align-items: center; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-            textarea { flex: 1; height: 44px; border: 1px solid #ddd; border-radius: 12px; padding: 10px; font-size: 16px; outline: none; background: #fcfcfc; -webkit-appearance: none; }
-            button { background: #8e2323; color: white; border: none; padding: 8px 18px; border-radius: 12px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        </style></head>
+            body { 
+                /* 优先使用下载的 Noto Serif Tibetan */
+                font-family: "Noto Serif Tibetan", "Microsoft Himalaya", "Noto Serif SC", serif; 
+                background: #fdfbf7; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #3d2b1f; 
+                -webkit-font-smoothing: antialiased;
+            }
+            #header { background: #8e2323; color: #f7f3e8; padding: 15px; text-align: center; font-weight: bold; font-size: 1.1em; }
+            #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+            .m { 
+                max-width: 85%; padding: 14px 18px; border-radius: 18px; 
+                line-height: 2.6; /* 增加行高防止叠字错位 */
+                font-size: 19px; word-wrap: break-word; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                font-variant-ligatures: discretionary-ligatures; /* 开启高级排版特性 */
+            }
+            .u { align-self: flex-end; background: #e6d5b8; }
+            .a { align-self: flex-start; background: #fff; border: 1px solid #eee; }
+            .a p { margin: 10px 0; line-height: 2.6; }
+            #input-area { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
+            textarea { flex: 1; height: 44px; border-radius: 12px; border: 1px solid #ddd; padding: 10px; font-size: 16px; outline: none; }
+            button { background: #8e2323; color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        </style></head>`);            
         <body>
             <div id="header">མཁྱེན། KHYEN AI 智者</div>
             <div id="chat"></div>
