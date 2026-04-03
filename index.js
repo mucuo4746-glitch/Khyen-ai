@@ -14,14 +14,23 @@ const server = http.createServer((req, res) => {
             body { font-family: 'Noto Serif Tibetan', serif; background: var(--bg-cream); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-brown); -webkit-font-smoothing: antialiased; }
             #header { background: var(--main-red); color: #f7f3e8; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-            .m { max-width: 85%; padding: 15px 20px; border-radius: 18px; line-height: 2.8; font-size: 19px; word-wrap: break-word; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); user-select: text; transition: all 0.3s; }
+            .m { 
+                max-width: 88%; padding: 16px 20px; border-radius: 18px; 
+                /* 核心修复：应用你找来的 CSS 秘籍 */
+                word-break: keep-all; 
+                white-space: pre-wrap; 
+                line-height: 2.4; 
+                font-size: 20px; 
+                position: relative; 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+                user-select: text;
+            }
             .u { align-self: flex-end; background: #e6d5b8; border-bottom-right-radius: 4px; }
             .a { align-self: flex-start; background: #fff; border: 1px solid #eee; border-bottom-left-radius: 4px; }
-            .a p { margin: 10px 0; line-height: 2.8; }
+            .a p { margin: 8px 0; }
             #input-area { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
             textarea { flex: 1; height: 48px; border: 1px solid #ddd; border-radius: 15px; padding: 12px; font-size: 16px; outline: none; resize: none; }
             button { background: var(--main-red); color: white; border: none; padding: 12px 25px; border-radius: 15px; font-weight: bold; cursor: pointer; }
-            /* 复制提示 */
             .copy-tip { position: absolute; top: -25px; right: 10px; background: var(--main-red); color: white; font-size: 12px; padding: 2px 8px; border-radius: 5px; animation: fadeout 2s forwards; }
             @keyframes fadeout { from {opacity: 1} to {opacity: 0} }
         </style></head>
@@ -36,9 +45,8 @@ const server = http.createServer((req, res) => {
                     const d = document.createElement('div');
                     d.className = 'm ' + type;
                     d.innerHTML = type === 'a' ? marked.parse(msg) : msg;
-                    // 点击复制逻辑
                     d.onclick = () => {
-                        const text = d.innerText.replace('复制成功', '');
+                        const text = d.innerText.replace('已复制 སྦྱར་ཟིན།', '');
                         navigator.clipboard.writeText(text);
                         const tip = document.createElement('div');
                         tip.className = 'copy-tip';
@@ -63,7 +71,7 @@ const server = http.createServer((req, res) => {
                         loader.innerHTML = marked.parse(data.reply);
                         h.push({ role: 'assistant', content: data.reply });
                         if (h.length > 20) h = h.slice(-20);
-                    } catch(e) { loader.innerText = '智者正在冥想，请稍后。'; }
+                    } catch(e) { loader.innerText = '智者正在冥想。'; }
                     c.scrollTop = c.scrollHeight;
                 }
             </script></body></html>`);
@@ -76,8 +84,7 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "claude-haiku-4-5-20251001",
                     max_tokens: 4096,
-                    // 注入你取经回来的灵魂指令
-                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。1. 当需要输出藏文时，必须使用标准的藏文书写系统（乌金体），确保每个音节之间有正确的音节点（་），格式必须准确。2. 不要猜测或拼凑藏文，如果不确定，宁可只用中文回答。3. 始终保持藏汉双语对照。4. 语气温和有礼，使用 Markdown 格式。",
+                    system: "你叫 KHYEN AI མཁྱེན།。是一位睿智、谦虚的导师。1.当需要输出藏文时，必须使用标准的藏文书写系统（乌金体），确保每个音节之间有正确的音节点（་），格式必须准确。不要猜测或拼凑藏文，如果不确定，宁可只用中文回答。2.始终保持藏汉双语对照。3.语气温和有礼，使用 Markdown 格式。",
                     messages: messages
                 });
                 const reqApi = https.request({
