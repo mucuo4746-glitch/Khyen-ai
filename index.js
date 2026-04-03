@@ -5,7 +5,6 @@ const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/index.html') {
-        // [修复2] 确认服务器返回的 Content-Type 包含 charset=utf-8
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`<!DOCTYPE html><html lang="zh"><head>
         <meta charset="UTF-8">
@@ -20,7 +19,6 @@ const server = http.createServer((req, res) => {
             #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
             .m { 
                 max-width: 88%; padding: 18px 24px; border-radius: 18px; 
-                /* [修复3] 前端显示藏文的核心 CSS */
                 font-family: 'Noto Serif Tibetan', serif; 
                 line-height: 2.5; 
                 word-break: keep-all; 
@@ -29,12 +27,11 @@ const server = http.createServer((req, res) => {
                 position: relative; 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.05); user-select: text;
             }
-            /* 强制对藏文段落进行视觉隔离，防止乱行 */
             .a p { margin: 15px 0; display: block; clear: both; }
             .u { align-self: flex-end; background: #e6d5b8; border-bottom-right-radius: 4px; }
             .a { align-self: flex-start; background: #fff; border: 1px solid #eee; border-bottom-left-radius: 4px; }
             #input-area { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
-            textarea { flex: 1; height: 48px; border: 1px solid #ddd; border-radius: 15px; padding: 12px; font-size: 16px; outline: none; resize: none; }
+            textarea { flex: 1; height: 48px; border: 1px solid #ddd; border-radius: 15px; padding: 12px; font-size: 16px; outline: none; resize: none; font-family: "Noto Serif SC", serif; }
             button { background: var(--main-red); color: white; border: none; padding: 12px 25px; border-radius: 15px; font-weight: bold; cursor: pointer; }
             .copy-tip { position: absolute; top: -25px; right: 10px; background: var(--main-red); color: white; font-size: 12px; padding: 2px 8px; border-radius: 5px; animation: fadeout 2s forwards; }
             @keyframes fadeout { from {opacity: 1} to {opacity: 0} }
@@ -89,16 +86,28 @@ const server = http.createServer((req, res) => {
                 const postData = JSON.stringify({
                     model: "claude-haiku-4-5-20251001",
                     max_tokens: 4096,
-                    // [修复 5-9] 融合 Claude 的所有核心要求
-                    system: `你叫 KHYEN AI མཁྱེན།。是一位睿智、严谨的导师。
-                    请一次性遵守以下规则（不可违背）：
-                    1. 默认仅使用中文回答。只有当用户明确使用藏文提问时，才使用藏文回答。
-                    2. 禁止自己造句或拼凑藏文，只能引用已存在的经典原文。
-                    3. 不确定藏文写法时直接用中文，绝对严禁猜测！
-                    4. 藏文输出必须包含正确的音节点(་)，确保格式完整无误。
-                    5. 藏文段落必须【单独成行】，严禁与中文混排在同一行。
-                    6. 严格保持藏汉双语逻辑，禁止复读用户的藏文提问。
-                    7. 语气温和、谦虚，使用 Markdown 格式。`,
+                    system: `你是 KHYEN AI མཁྱེན།，专注藏族文化、佛法与藏语的智慧导师。མཁྱེན། 意为"智慧、全知、洞见"。
+
+【语言规则】
+- 默认只用中文回答
+- 只有用户明确用藏文提问时才用藏文回答
+- 藏文只引用已存在的经典原文，绝不自造词句
+- 不确定藏文写法时直接用中文替代，严禁猜测
+- 藏文输出必须包含正确音节点（་），格式完整
+- 藏文段落必须单独成行，不与中文混排
+
+【知识范围】
+- 藏传佛教、菩提行论经典、藏族节日与习俗
+- 藏族饮食文化、藏医基础知识、藏族历史
+- 藏汉英三语翻译
+- 藏族艺术、唐卡、音乐、舞蹈
+
+【回答风格】
+- 温暖、有深度，像一位博学睿智的藏族学者
+- 遇到哲学宗教问题展现智慧，用生动比喻解释深刻道理
+- 遇到生活文化问题用自然亲切的方式回答
+- 使用Markdown格式，回答有条理
+- 不幼稚，不简单化，有藏族文化的气息`,
                     messages: messages
                 });
                 const reqApi = https.request({
