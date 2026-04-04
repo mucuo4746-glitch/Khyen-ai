@@ -4,7 +4,7 @@ const https = require('https');
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
-  // 1. 静态网页部分：保留您最满意的封面与按钮设计
+  // 1. 静态页面逻辑：确保封面、མཁྱེན། 和所有按钮（保存、清空、首页）完美呈现
   if (req.url === '/' || req.url === '/index.html') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!DOCTYPE html><html lang="zh"><head>
@@ -91,28 +91,28 @@ async function send(){
   const l=document.createElement('div');l.className='m a';l.innerText='智者斟酌中...';document.getElementById('chat').appendChild(l);
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:h})});
-    const d=await r.json();
-    if(d && d.reply){
+    const d = await r.json();
+    if(d.reply){
         l.innerHTML=marked.parse(d.reply);
         if(/[\\u0F00-\\u0FFF]/.test(d.reply))l.classList.add('bo');
         h.push({role:'assistant',content:d.reply});
-    }else{l.innerText='连接中断，请重试。';}
-  }catch(e){l.innerText='网络连接故障。';}
+    } else { l.innerText = d.error || '响应异常'; }
+  }catch(e){l.innerText='连接故障。';}
   document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
 </script></body></html>`);
 
-  // 2. API 处理部分：修正消息提取逻辑
+  // 2. API 处理逻辑：彻底修正提取逻辑，并加入错误捕捉
   } else if (req.url === '/api/chat' && req.method === 'POST') {
     let body = '';
-    req.on('data', c => body += c);
+    req.on('data', chunk => body += chunk);
     req.on('end', () => {
       try {
         const { messages } = JSON.parse(body);
         const postData = JSON.stringify({
           model: "claude-3-5-sonnet-20240620",
           max_tokens: 4096,
-          system: "你是 KHYEN AI མཁྱེན།，藏文化导师。请始终以睿智、亲切、谦逊的语气回答。记住哈达起源于领口抹糌粑粉或系白羊毛绳的习俗。",
+          system: "你是 KHYEN AI མཁྱེན།，藏文化导师。请始终以睿智、亲切、谦逊的语气回答。",
           messages: messages
         });
 
@@ -122,39 +122,40 @@ async function send(){
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': MY_ANTHROPIC_KEY.trim(),
+            'x-api-key': MY_ANTHROPIC_KEY ? MY_ANTHROPIC_KEY.trim() : '',
             'anthropic-version': '2023-06-01'
           }
         }, apiRes => {
-          let d = '';
-          apiRes.on('data', c => d += c);
+          let data = '';
+          apiRes.on('data', chunk => data += chunk);
           apiRes.on('end', () => {
             try {
-              const j = JSON.parse(d);
-              // 关键修正：确保能正确提取回复内容
-              if (j.content && j.content[0] && j.content[0].text) {
+              const json = JSON.parse(data);
+              // 如果 API 报错（如额度不足），会进入这个 else
+              if (json.content && json.content[0] && json.content[0].text) {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ reply: j.content[0].text }));
+                res.end(JSON.stringify({ reply: json.content[0].text }));
               } else {
+                const errMsg = json.error ? (json.error.message || "API服务异常") : "智者暂无回应";
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ reply: "由于由于能量不足，智者暂时无法回应。请稍后再试。" }));
+                res.end(JSON.stringify({ reply: "由于由于后台能量不足（" + errMsg + "），智者暂时无法回应。请检查账户余额。" }));
               }
             } catch (e) {
               res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ reply: "解析智慧时出了点小差错。" }));
+              res.end(JSON.stringify({ reply: "解析智慧语录时出现偏差。" }));
             }
           });
         });
 
         reqApi.on('error', e => {
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ reply: "信号飞越雪山时丢失了。" }));
+          res.end(JSON.stringify({ reply: "信号丢失在雪山之中。" }));
         });
         reqApi.write(postData);
         reqApi.end();
       } catch (e) {
         res.writeHead(400);
-        res.end(JSON.stringify({ error: "请求格式错误" }));
+        res.end(JSON.stringify({ error: "请求数据有误" }));
       }
     });
   }
