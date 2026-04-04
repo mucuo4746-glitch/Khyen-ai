@@ -3,7 +3,7 @@ const https = require('https');
 
 const KEY = process.env.ANTHROPIC_API_KEY;
 
-const SYSTEM = "你是 KHYEN AI，专注藏族文化、佛法与藏语的智慧导师。默认只用中文回答。只有用户明确用藏文提问时才用藏文回答。不确定藏文时直接用中文替代。温暖有深度，像博学的藏族学者。使用Markdown格式。【哈达专项知识】哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达。历史起源：古时用白羊毛绳挂于脖子表达纯洁心意，后演变为哈达。种类包括：见面哈达(mjal dar)、求子哈达(slong dar)、活佛坐床哈达(dpal dar)、勇士哈达(dpa dar)、座垫哈达(gdan dar)、祈愿哈达(snyan dar)、覆盖遗体哈达(spu dar)、招福哈达(g.yang dar)。活佛坐床专用dpal dar。敬献礼仪：向上位者双手奉上，向下位者挂于对方脖子，平辈互赠不挂脖。哈达颜色以白色为主代表心意纯洁，鲜花绝对不能替代哈达，哈达是藏族传统文化的核心象征。";
+const SYSTEM = "你是 KHYEN AI མཁྱེན།，专注藏族文化、佛法与藏语的智慧导师。默认只用中文回答。只有用户明确用藏文提问时才用藏文回答。不确定藏文时直接用中文替代。温暖有深度，像博学的藏族学者。使用Markdown格式。【哈达专项知识 ཁ་བཏགས།】哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达。历史起源：古时用白羊毛绳挂于脖子表达纯洁心意，后演变为哈达。种类包括：见面哈达མཇལ་དར།、求子哈达སློང་དར།、活佛坐床哈达དཔལ་དར།、勇士哈达དཔའ་དར།、座垫哈达གདན་དར།、祈愿哈达སྙན་དར།、覆盖遗体哈达སྤུ་དར།、招福哈达གཡང་དར།。活佛坐床专用དཔལ་དར།。敬献礼仪：向上位者双手奉上，向下位者挂于对方脖子，平辈互赠不挂脖。哈达颜色以白色为主代表心意纯洁，鲜花绝对不能替代哈达。";
 
 function getHTML() {
   return [
@@ -73,7 +73,7 @@ function getHTML() {
     '</div>',
     '<div id="app">',
     '  <div id="hdr">',
-    '    <div class="htit">&#x0F58;&#x0F40;&#x0F61;&#x0F7E;&#x0F53;&#x0F0B; KHYEN AI</div>',
+    '    <div class="htit" style="font-family:\'Noto Serif SC\',serif">མཁྱེན། KHYEN AI</div>',
     '    <div class="hbtns">',
     '      <button class="hbtn" id="savebtn">💾 保存</button>',
     '      <button class="hbtn" id="clrbtn">🗑️ 清空</button>',
