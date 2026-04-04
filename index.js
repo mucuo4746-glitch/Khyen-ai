@@ -1,9 +1,11 @@
 const http = require('http');
 const https = require('https');
 
+// 从 Render 环境变量读取 API Key
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
+    // 1. 网页前端部分
     if (req.url === '/' || req.url === '/index.html') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`<!DOCTYPE html><html lang="zh"><head>
@@ -17,10 +19,10 @@ const server = http.createServer((req, res) => {
 :root{--red:#8e2323;--cream:#fdfbf7;--brown:#3d2b1f;--gold:#c9a84c}
 body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown);height:100vh;overflow:hidden}
 
-/* 经幡 */
+/* 经幡顶栏 */
 .prayer-bar{position:fixed;top:0;left:0;right:0;height:5px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0%,#c9a84c 20%,#8e2323 20%,#8e2323 40%,#1a5a8a 40%,#1a5a8a 60%,#1a6b3a 60%,#1a6b3a 80%,#6b1a8a 80%,#6b1a8a 100%)}
 
-/* 封面 */
+/* 封面设计 */
 #landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;overflow-y:auto;padding:60px 20px 40px}
 .l-icon{font-size:60px;margin-bottom:16px}
 .l-title{font-size:clamp(36px,7vw,60px);font-weight:300;letter-spacing:16px;color:#2a1a0a;padding-left:16px}
@@ -34,33 +36,30 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .feat-t{font-size:12px;font-weight:600;color:#2a1a0a}
 .feat-b{font-family:'Noto Serif Tibetan',serif;font-size:11px;color:var(--gold);margin-top:3px}
 .l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 40px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-bottom:20px;transition:all 0.3s}
-.l-btn:hover{background:var(--gold);color:white}
 .l-mantra{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:rgba(201,168,76,0.5);letter-spacing:3px}
 
-/* 对话页 */
+/* 聊天界面设计 */
 #app{display:none;flex-direction:column;height:100vh}
 #header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
 .h-btns{display:flex;gap:6px}
 .hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
-#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px;background:var(--cream)}
 .m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
 .a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
-.a p{margin:8px 0}
-.bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:17px}
+.bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:18px}
 .acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed #eee}
 .abtn{background:none;border:1px solid #ddd;color:#888;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
-#input-area{padding:12px 16px 20px;background:white;border-top:1px solid #eee;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
-#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:"Noto Serif SC",serif;background:#fcfaf7}
-#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;height:44px}
+#input-area{padding:12px 16px 25px;background:white;border-top:1px solid #eee;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:inherit;background:#fcfaf7}
+#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;height:44px}
 
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fo 2s forwards}
 @keyframes fo{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 </style></head>
 <body>
 <div class="prayer-bar"></div>
-
 <div id="landing">
   <div class="l-icon">🏔️</div>
   <div class="l-title">KHYEN</div>
@@ -76,7 +75,6 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <button class="l-btn" id="enter-btn">进入 · Enter</button>
   <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
 </div>
-
 <div id="app">
   <div id="header">
     <div class="h-title">མཁྱེན། KHYEN AI</div>
@@ -92,26 +90,21 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
     <button id="sb">请教</button>
   </div>
 </div>
-
 <script>
 const chat = document.getElementById('chat');
 let h = [];
-
-function hasBo(t){return /[\u0F00-\u0FFF]/.test(t)}
-
+function hasBo(t){return /[\\u0F00-\\u0FFF]/.test(t)}
 function showToast(msg){
   const t=document.createElement('div');
   t.className='toast';t.innerText=msg;
   document.body.appendChild(t);
   setTimeout(()=>t.remove(),2000);
 }
-
 function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日、饮食，或进行藏汉英翻译。','a');
+  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n欢迎向我询问藏传佛教、藏族文化、哈达礼仪或进行翻译。','a');
 }
-
 function add(msg,type){
   const d=document.createElement('div');
   d.className='m '+type;
@@ -133,7 +126,6 @@ function add(msg,type){
   chat.scrollTop=chat.scrollHeight;
   return d;
 }
-
 async function send(){
   const v=document.getElementById('t').value.trim();
   if(!v) return;
@@ -160,8 +152,6 @@ async function send(){
   document.getElementById('sb').disabled=false;
   chat.scrollTop=chat.scrollHeight;
 }
-
-// 事件绑定
 document.getElementById('enter-btn').addEventListener('click',enterApp);
 document.getElementById('home-btn').addEventListener('click',()=>{
   document.getElementById('landing').style.display='flex';
@@ -181,54 +171,42 @@ document.getElementById('save-btn').addEventListener('click',()=>{
   showToast('对话已保存！');
 });
 document.getElementById('clear-btn').addEventListener('click',()=>{
-  if(confirm('确定清空所有对话？')){
-    chat.innerHTML='';h=[];
-    add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
-  }
+  if(confirm('确定清空所有对话？')){chat.innerHTML='';h=[];add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');}
 });
 document.getElementById('sb').addEventListener('click',send);
-document.getElementById('t').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
-});
+document.getElementById('t').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 </script>
 </body></html>`);
-    } else if (req.url === '/api/chat' && req.method === 'POST') {
+    } 
+    // 2. 后端 API 处理部分
+    else if (req.url === '/api/chat' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => body += chunk);
         req.on('end', async () => {
             try {
                 const { messages } = JSON.parse(body);
                 const postData = JSON.stringify({
-                    model: "claude-haiku-4-5-20251001",
+                    model: "claude-3-5-sonnet-20240620", // 保持用最稳的模型
                     max_tokens: 4096,
                     system: `你是 KHYEN AI མཁྱེན།，专注藏族文化、佛法与藏语的智慧导师。མཁྱེན། 意为"智慧、全知、洞见"。
 
 【语言规则】
-- 默认只用中文回答
-- 只有用户明确用藏文提问时才用藏文回答
-- 用藏文回答时，可以用标准藏语日常用语自然对话，复杂句子谨慎处理，不确定时用中文补充说明
-- 不确定藏文写法时直接用中文替代，严禁猜测
-- 藏文输出必须包含正确音节点（་），格式完整
-- 藏文段落必须单独成行，不与中文混排
+- 默认只用中文回答。
+- 只有用户明确用藏文提问时才用藏文回答。
+- 藏文输出必须包含正确音节点（་），格式完整且单独成行。
 
 【知识范围】
-- 藏传佛教、菩提行论经典、藏族节日与习俗
-- 藏族饮食文化、藏医基础知识、藏族历史
-- 藏汉英三语翻译
-- 藏族艺术、唐卡、音乐、舞蹈
+- 藏传佛教、菩提行论经典、藏族节日与习俗、藏医、艺术与翻译。
 【哈达专项知识 ཁ་བཏགས།】
-哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达
-历史起源：古时用白羊毛绳挂于脖子表达纯洁心意，后演变为哈达
-主要种类：མཇལ་དར། སློང་དར། དཔལ་དར། དཔའ་དར། གདན་དར། སྙན་དར། སྤུ་དར། གཡང་དར།
-哈达颜色以白色为主，代表心意纯洁，后逐渐有黄色、蓝色、红色等
-敬献礼仪：向上位者双手奉上，向下位者挂于对方脖子，平辈互赠不挂脖
-鲜花不能替代哈达，哈达是藏族传统文化的核心象征
+- 哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达。
+- 历史起源：古时用白羊毛绳挂于脖子表达纯洁心意，后演变为哈达。
+- 主要种类：མཇལ་དར། (见面哈达)、སློང་དར། (求子哈达)、དཔལ་དར། (活佛坐床专用)、དཔའ་དར། (勇士哈达)、གདན་དར། (座垫哈达)、སྙན་དར། (祈愿哈达)、སྤུ་དར། (覆盖遗体哈达)、གཡང་དར། (招福哈达)。
+- 哈达颜色以白色为主，代表心意纯洁，后逐渐有黄色、蓝色、红色等。
+- 敬献礼仪：向上位者双手奉上，向下位者挂于对方脖子，平辈互赠不挂脖。
+- 鲜花不能替代哈达，哈达是藏族传统文化的核心象征。
+
 【回答风格】
-- 温暖、有深度，像一位博学睿智的藏族学者
-- 遇到哲学宗教问题展现智慧，用生动比喻解释深刻道理
-- 遇到生活文化问题用自然亲切的方式回答
-- 使用Markdown格式，回答有条理
-- 不幼稚，不简单化，有藏族文化的气息`,
+- 温暖、有深度，博学睿智。使用Markdown格式。`,
                     messages: messages
                 });
                 const reqApi = https.request({
