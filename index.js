@@ -1,49 +1,43 @@
 const http = require('http');
 const https = require('https');
 
-const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-
-// 把前端界面完全固定下来
-const page = `<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KHYEN AI</title><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC&family=Noto+Serif+Tibetan&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><style>:root{--red:#8e2323;--cream:#fdfbf7;--gold:#c9a84c}body{font-family:"Noto Serif SC",serif;background:var(--cream);margin:0;display:flex;flex-direction:column;height:100vh}#header{background:var(--red);color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}#chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:15px}.m{max-width:85%;padding:12px;border-radius:10px;line-height:1.6}.u{align-self:flex-end;background:#e6d5b8}.a{align-self:flex-start;background:#fff;border:1px solid #ddd}.bo{font-family:"Noto Serif Tibetan",serif;font-size:20px}#input-area{padding:15px;background:#fff;border-top:1px solid #ddd;display:flex;gap:10px}input{flex:1;padding:10px;border:1px solid #ddd;border-radius:5px}button{background:var(--red);color:#fff;border:none;padding:10px 20px;border-radius:5px;cursor:pointer}</style></head><body><div id="header"><div style="font-family:'Noto Serif Tibetan'">མཁྱེན། KHYEN AI</div><button onclick="location.reload()" style="background:none;color:#fff;border:1px solid #fff;padding:4px 8px;font-size:12px;border-radius:4px">重置</button></div><div id="chat"></div><div id="input-area"><input id="t" placeholder="请输入..."><button onclick="send()">发送</button></div><script>let h=[];function add(m,t){const d=document.createElement('div');d.className='m '+t;if(/[\\u0F00-\\u0FFF]/.test(m))d.classList.add('bo');d.innerHTML=marked.parse(m);document.getElementById('chat').appendChild(d);document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight}add('扎西德勒！我是 KHYEN。','a');async function send(){const v=document.getElementById('t').value.trim();if(!v)return;add(v,'u');h.push({role:'user',content:v});document.getElementById('t').value='';const l=document.createElement('div');l.className='m a';l.innerText='...';document.getElementById('chat').appendChild(l);try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:h})});const d=await r.json();if(d.reply){l.innerHTML=marked.parse(d.reply);if(/[\\u0F00-\\u0FFF]/.test(d.reply))l.classList.add('bo');h.push({role:'assistant',content:d.reply})}else{l.innerText='错误：'+(d.error||'未知')}}catch(e){l.innerText='连接失败'}}</script></body></html>`;
-
+// 1. 核心后端逻辑
 const server = http.createServer((req, res) => {
-  if (req.url === '/' || req.url === '/index.html') {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(page);
-  } else if (req.url === '/api/chat' && req.method === 'POST') {
-    let b = '';
-    req.on('data', c => b += c);
+  // 处理 API 对话请求
+  if (req.url === '/api/chat' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const { messages } = JSON.parse(b);
+        const payload = JSON.parse(body);
         const postData = JSON.stringify({
           model: "claude-3-5-sonnet-20240620",
           max_tokens: 1024,
-          messages: messages
+          messages: payload.messages
         });
-        const options = {
+
+        const apiReq = https.request({
           hostname: 'api.anthropic.com',
           path: '/v1/messages',
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': (MY_ANTHROPIC_KEY || '').trim(),
+            'x-api-key': process.env.ANTHROPIC_API_KEY.trim(),
             'anthropic-version': '2023-06-01'
           }
-        };
-        const apiReq = https.request(options, apiRes => {
-          let d = '';
-          apiRes.on('data', c => d += c);
+        }, apiRes => {
+          let responseData = '';
+          apiRes.on('data', d => { responseData += d; });
           apiRes.on('end', () => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
             try {
-              const j = JSON.parse(d);
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              if (j.content && j.content[0]) {
-                res.end(JSON.stringify({ reply: j.content[0].text }));
+              const json = JSON.parse(responseData);
+              if (json.content && json.content[0]) {
+                res.end(JSON.stringify({ reply: json.content[0].text }));
               } else {
-                res.end(JSON.stringify({ error: j.error ? j.error.message : "API错误" }));
+                res.end(JSON.stringify({ error: "API未返回有效内容" }));
               }
-            } catch (e) { res.end(JSON.stringify({ error: "解析失败" })); }
+            } catch (e) { res.end(JSON.stringify({ error: "响应解析失败" })); }
           });
         });
         apiReq.on('error', e => {
@@ -52,9 +46,65 @@ const server = http.createServer((req, res) => {
         });
         apiReq.write(postData);
         apiReq.end();
-      } catch (e) { res.end(JSON.stringify({ error: "格式错误" })); }
+      } catch (e) {
+        res.end(JSON.stringify({ error: "请求解析失败" }));
+      }
     });
+    return;
   }
+
+  // 2. 默认返回前端界面（确保 HTML 始终能正确显示）
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(`<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>KHYEN AI</title>
+    <style>
+        body{font-family:serif;background:#fdfbf7;margin:0;display:flex;flex-direction:column;height:100vh}
+        #h{background:#8e2323;color:#fff;padding:15px;text-align:center}
+        #c{flex:1;overflow-y:auto;padding:20px}
+        .m{margin-bottom:15px;padding:10px;border-radius:8px;max-width:80%}
+        .u{background:#e6d5b8;align-self:flex-end;margin-left:auto}
+        .a{background:#fff;border:1px solid #ddd}
+        #i{padding:20px;display:flex;gap:10px;border-top:1px solid #ddd}
+        input{flex:1;padding:10px}
+        button{background:#8e2323;color:#fff;border:none;padding:10px 20px;cursor:pointer}
+    </style>
+</head>
+<body>
+    <div id="h">མཁྱེན། KHYEN AI</div>
+    <div id="c"></div>
+    <div id="i">
+        <input id="t" placeholder="输入消息...">
+        <button onclick="send()">发送</button>
+    </div>
+    <script>
+        let h=[];
+        const c=document.getElementById('c');
+        function add(txt,cls){
+            const d=document.createElement('div');
+            d.className='m '+cls;d.innerText=txt;
+            c.appendChild(d);c.scrollTop=c.scrollHeight;
+        }
+        async function send(){
+            const v=document.getElementById('t').value;if(!v)return;
+            add(v,'u');h.push({role:'user',content:v});
+            document.getElementById('t').value='';
+            try{
+                const r=await fetch('/api/chat',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({messages:h})
+                });
+                const d=await r.json();
+                if(d.reply){add(d.reply,'a');h.push({role:'assistant',content:d.reply});}
+                else{add("错误: "+d.error,'a');}
+            }catch(e){add("连接失败",'a');}
+        }
+    </script>
+</body>
+</html>`);
 });
 
 server.listen(process.env.PORT || 10000);
