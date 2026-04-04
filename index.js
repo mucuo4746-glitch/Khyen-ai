@@ -4,6 +4,7 @@ const https = require('https');
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
+  // 1. 静态网页部分：保留您最满意的封面与按钮设计
   if (req.url === '/' || req.url === '/index.html') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!DOCTYPE html><html lang="zh"><head>
@@ -91,15 +92,17 @@ async function send(){
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:h})});
     const d=await r.json();
-    if(d.reply){
+    if(d && d.reply){
         l.innerHTML=marked.parse(d.reply);
         if(/[\\u0F00-\\u0FFF]/.test(d.reply))l.classList.add('bo');
         h.push({role:'assistant',content:d.reply});
-    }else{l.innerText='响应格式错误：'+JSON.stringify(d);}
-  }catch(e){l.innerText='连接故障。';}
+    }else{l.innerText='连接中断，请重试。';}
+  }catch(e){l.innerText='网络连接故障。';}
   document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
 </script></body></html>`);
+
+  // 2. API 处理部分：修正消息提取逻辑
   } else if (req.url === '/api/chat' && req.method === 'POST') {
     let body = '';
     req.on('data', c => body += c);
@@ -109,9 +112,10 @@ async function send(){
         const postData = JSON.stringify({
           model: "claude-3-5-sonnet-20240620",
           max_tokens: 4096,
-          system: "你是 KHYEN AI མཁྱེན།，藏文化导师。记住：哈达起源于领口抹糌粑粉或系白羊毛绳。语气谦逊。",
+          system: "你是 KHYEN AI མཁྱེན།，藏文化导师。请始终以睿智、亲切、谦逊的语气回答。记住哈达起源于领口抹糌粑粉或系白羊毛绳的习俗。",
           messages: messages
         });
+
         const reqApi = https.request({
           hostname: 'api.anthropic.com',
           path: '/v1/messages',
@@ -127,20 +131,25 @@ async function send(){
           apiRes.on('end', () => {
             try {
               const j = JSON.parse(d);
-              if (j.content && j.content[0]) {
+              // 关键修正：确保能正确提取回复内容
+              if (j.content && j.content[0] && j.content[0].text) {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ reply: j.content[0].text }));
               } else {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ reply: "API消息提取失败。", raw: j }));
+                res.end(JSON.stringify({ reply: "由于由于能量不足，智者暂时无法回应。请稍后再试。" }));
               }
             } catch (e) {
-              res.writeHead(500);
-              res.end(JSON.stringify({ error: "JSON解析失败" }));
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ reply: "解析智慧时出了点小差错。" }));
             }
           });
         });
-        reqApi.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
+
+        reqApi.on('error', e => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ reply: "信号飞越雪山时丢失了。" }));
+        });
         reqApi.write(postData);
         reqApi.end();
       } catch (e) {
@@ -150,4 +159,5 @@ async function send(){
     });
   }
 });
+
 server.listen(process.env.PORT || 10000);
