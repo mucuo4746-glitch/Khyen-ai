@@ -1,213 +1,93 @@
 const http = require('http');
 const https = require('https');
 
-const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-
 const server = http.createServer((req, res) => {
-if (req.url === '/' || req.url === '/index.html') {
-res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-res.end(`<!DOCTYPE html><html lang="zh"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  if (req.url === '/' || req.url === '/index.html') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!DOCTYPE html><html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>KHYEN AI མཁྱེན།</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Serif+Tibetan:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#8e2323;--cream:#fdfbf7;--brown:#3d2b1f;--gold:#c9a84c}
-body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown);height:100vh;overflow:hidden}
-.prayer-bar{position:fixed;top:0;left:0;right:0;height:5px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0%,#c9a84c 20%,#8e2323 20%,#8e2323 40%,#1a5a8a 40%,#1a5a8a 60%,#1a6b3a 60%,#1a6b3a 80%,#6b1a8a 80%,#6b1a8a 100%)}
-#landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;overflow-y:auto;padding:60px 20px 40px}
-.l-icon{font-size:60px;margin-bottom:16px}
-.l-title{font-size:clamp(36px,7vw,60px);font-weight:300;letter-spacing:16px;color:#2a1a0a;padding-left:16px}
-.l-bo{font-family:'Noto Serif Tibetan',serif;font-size:clamp(16px,3vw,22px);color:var(--gold);letter-spacing:4px;margin:8px 0}
-.l-line{width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto}
-.l-tag{font-size:11px;color:#8a7a6a;letter-spacing:3px;text-transform:uppercase;margin-bottom:32px}
-.l-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:440px;margin-bottom:32px}
-@media(max-width:480px){.l-feats{grid-template-columns:repeat(2,1fr)}}
-.feat{background:white;border:1px solid rgba(201,168,76,0.25);border-radius:14px;padding:14px 8px;text-align:center}
-.feat-i{font-size:22px;margin-bottom:6px}
-.feat-t{font-size:12px;font-weight:600;color:#2a1a0a}
-.feat-b{font-family:'Noto Serif Tibetan',serif;font-size:11px;color:var(--gold);margin-top:3px}
-.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 40px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-bottom:20px;transition:all 0.3s}
-.l-btn:hover{background:var(--gold);color:white}
-#app{display:none;flex-direction:column;height:100vh}
-#header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
-.h-btns{display:flex;gap:6px}
-.hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
-#chat{flex:1;overflow-y:auto;padding:166px 16px;display:flex;flex-direction:column;gap:16px}
-.m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-.u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
-.a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
-.bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:17px}
-.acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed #eee}
-.abtn{background:none;border:1px solid #ddd;color:#888;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
-#input-area{padding:12px 16px 20px;background:white;border-top:1px solid #eee;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
-#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:"Noto Serif SC",serif;background:#fcfaf7}
-#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;height:44px}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fo 2s forwards}
-@keyframes fo{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+:root{--red:#8e2323;--cream:#fdfbf7;--gold:#c9a84c}
+body{font-family:"Noto Serif SC",serif;background:var(--cream);margin:0;height:100vh;display:flex;flex-direction:column}
+.prayer-bar{height:4px;background:repeating-linear-gradient(90deg,#c9a84c 0 20%,#8e2323 20% 40%,#1a5a8a 40% 60%,#1a6b3a 60% 80%,#6b1a8a 80% 100%)}
+#landing{position:fixed;inset:0;background:var(--cream);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.l-title{font-size:48px;letter-spacing:12px;margin:0}
+.l-bo{font-family:'Noto Serif Tibetan',serif;color:var(--gold);font-size:20px;margin:10px 0}
+.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:12px 40px;border-radius:25px;cursor:pointer;margin-top:30px}
+#app{display:none;flex:1;flex-direction:column;overflow:hidden}
+header{background:var(--red);color:white;padding:10px 15px;display:flex;justify-content:space-between;align-items:center}
+#chat{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:15px}
+.m{max-width:85%;padding:12px 18px;border-radius:15px;line-height:1.6;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
+.u{align-self:flex-end;background:#e6d5b8}
+.a{align-self:flex-start;background:white;border:1px solid #eee}
+.bo{font-family:'Noto Serif Tibetan',serif;font-size:18px;line-height:2}
+#input-area{padding:15px;background:white;border-top:1px solid #eee;display:flex;gap:10px}
+textarea{flex:1;height:45px;border:1px solid #ddd;border-radius:10px;padding:10px;resize:none}
+#sb{background:var(--red);color:white;border:none;padding:0 20px;border-radius:10px;font-weight:bold}
 </style></head>
 <body>
 <div class="prayer-bar"></div>
 <div id="landing">
-  <div class="l-icon">🏔️</div>
-  <div class="l-title">KHYEN</div>
-  <div class="l-bo">མཁྱེན། AI</div>
-  <div class="l-line"></div>
-  <div class="l-tag">Intelligence Rooted in Tibetan Wisdom</div>
-  <div class="l-feats">
-    <div class="feat"><div class="feat-i">🔤</div><div class="feat-t">翻译</div><div class="feat-b">ཡིག་བསྒྱུར།</div></div>
-    <div class="feat"><div class="feat-i">📚</div><div class="feat-t">文化</div><div class="feat-b">རིག་གཞུང་།</div></div>
-    <div class="feat"><div class="feat-i">☸️</div><div class="feat-t">佛法</div><div class="feat-b">དམ་ཆོས།</div></div>
-    <div class="feat"><div class="feat-i">🗓️</div><div class="feat-t">节日</div><div class="feat-b">དུས་ཆེན།</div></div>
-  </div>
-  <button class="l-btn" id="enter-btn">进入 · Enter</button>
-  <div class="l-mantra" style="font-family:'Noto Serif Tibetan',serif;color:rgba(201,168,76,0.5)">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
+  <div class="l-title">KHYEN</div><div class="l-bo">མཁྱེན།</div>
+  <p style="color:#8a7a6a;letter-spacing:2px;font-size:12px">INTELLIGENCE ROOTED IN TIBETAN WISDOM</p>
+  <button class="l-btn" onclick="enterApp()">进入 · Enter</button>
 </div>
 <div id="app">
-  <div id="header">
-    <div class="h-title">མཁྱེན། KHYEN AI</div>
-    <div class="h-btns">
-      <button class="hbtn" id="save-btn">💾 保存对话</button>
-      <button class="hbtn" id="clear-btn">🗑️ 清空</button>
-      <button class="hbtn" id="home-btn">🏠 首页</button>
-    </div>
-  </div>
+  <header><div>མཁྱེན། KHYEN AI</div><button onclick="location.reload()" style="background:none;border:1px solid white;color:white;font-size:10px;padding:2px 8px;border-radius:4px">重置</button></header>
   <div id="chat"></div>
-  <div id="input-area">
-    <textarea id="t" placeholder="在此请教导师导师导师..."></textarea>
-    <button id="sb">请教请教</button>
-  </div>
+  <div id="input-area"><textarea id="t" placeholder="在此开启心灵对话..."></textarea><button id="sb" onclick="send()">请教</button></div>
 </div>
 <script>
-const chat = document.getElementById('chat');
 let h = [];
-function hasBo(t){return /[\\u0F00-\\u0FFF]/.test(t)}
-function showToast(msg){
-  const t=document.createElement('div');
-  t.className='toast';t.innerText=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2000);
-}
-function enterApp(){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('app').style.display='flex';
-  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日、饮食，或进行藏汉英翻译。','a');
-}
-function add(msg,type){
-  const d=document.createElement('div');
-  d.className='m '+type;
-  if(hasBo(msg)) d.classList.add('bo');
-  d.innerHTML=type==='a'?marked.parse(msg):msg;
-  if(type==='a'){
-    const acts=document.createElement('div');
-    acts.className='acts';
-    const cb=document.createElement('button');
-    cb.className='abtn';cb.innerText='📋 复制复制';
-    cb.onclick=()=>{
-      const txt=d.innerText.replace('📋 复制复制','').trim();
-      navigator.clipboard.writeText(txt).then(()=>showToast('已复制复制 ✓'));
-    };
-    acts.appendChild(cb);
-    d.appendChild(acts);
-  }
-  chat.appendChild(d);
-  chat.scrollTop=chat.scrollHeight;
-  return d;
+function enterApp(){document.getElementById('landing').style.display='none';document.getElementById('app').style.display='flex';add('扎西德勒！我是您的智慧导师 KHYEN。','a');}
+function add(m,t){
+  const d=document.createElement('div');d.className='m '+t;
+  if(/[\\u0F00-\\u0FFF]/.test(m))d.classList.add('bo');
+  d.innerHTML=marked.parse(m);document.getElementById('chat').appendChild(d);
+  document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
 async function send(){
-  const v=document.getElementById('t').value.trim();
-  if(!v) return;
-  add(v,'u');
-  h.push({role:'user',content:v});
-  document.getElementById('t').value='';
-  document.getElementById('sb').disabled=true;
-  const loader=add('智者正在斟酌...','a');
+  const v=document.getElementById('t').value.trim();if(!v)return;
+  add(v,'u');h.push({role:'user',content:v});document.getElementById('t').value='';
+  const l=document.createElement('div');l.className='m a';l.innerText='智者斟酌中...';document.getElementById('chat').appendChild(l);
   try{
-    const r=fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
-    const resp = await r; const data = await resp.json();
-    loader.innerHTML=marked.parse(data.reply);
-    if(hasBo(data.reply)) loader.classList.add('bo');
-    const acts=document.createElement('div');
-    acts.className='acts';
-    const cb=document.createElement('button');
-    cb.className='abtn';cb.innerText='📋 复制复制';
-    cb.onclick=()=>navigator.clipboard.writeText(data.reply).then(()=>showToast('已复制复制 ✓'));
-    acts.appendChild(cb);
-    loader.appendChild(acts);
-    h.push({role:'assistant',content:data.reply});
-    if(h.length>20) h=h.slice(-20);
-  }catch(e){loader.innerText='连接中断。连接中断。';}
-  document.getElementById('sb').disabled=false;
-  chat.scrollTop=chat.scrollHeight;
+    const r=await fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
+    const j=await r.json();l.innerHTML=marked.parse(j.reply);
+    if(/[\\u0F00-\\u0FFF]/.test(j.reply))l.classList.add('bo');
+    h.push({role:'assistant',content:j.reply});
+  }catch(e){l.innerText='连接故障。';}
 }
-document.getElementById('enter-btn').addEventListener('click',enterApp);
-document.getElementById('home-btn').addEventListener('click',()=>{
-  document.getElementById('landing').style.display='flex';
-  document.getElementById('app').style.display='none';
-});
-document.getElementById('save-btn').addEventListener('click',()=>{
-  const msgs=Array.from(document.querySelectorAll('.m')).map(m=>{
-    const cl=m.cloneNode(true);
-    const a=cl.querySelector('.acts');if(a)a.remove();
-    return cl.innerText.trim();
-  }).join('\\n\\n---\\n\\n');
-  const blob=new Blob([msgs],{type:'text/plain;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='Khyen_AI_对话记录.txt';
-  a.click();
-  showToast('对话已保存！对话已保存！');
-});
-document.getElementById('clear-btn').addEventListener('click',()=>{
-  if(confirm('确定清空所有对话？确定清空所有对话？')){
-    chat.innerHTML='';h=[];
-    add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
+</script></body></html>`);
+  } else if (req.url === '/api/chat' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      const { messages } = JSON.parse(body);
+      const postData = JSON.stringify({
+        model: "claude-3-5-sonnet-20240620",
+        max_tokens: 4096,
+        system: "你是 KHYEN AI མཁྱེན།。关于哈达（ཁ་བཏགས།）：1.历史源于领口抹糌粑粉（རྩམ་པས་དཀར་ཐིག་བརྒྱབས་པ）或系白羊毛绳。2.分类包括拜见（མཇལ་དར།）、求亲（སློང་དར།）、坐床（དཔལ་དར།）等。3.哈达不可被鲜花替代。语气睿智谦逊。",
+        messages: messages
+      });
+      const reqApi = https.request({
+        hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'x-api-key': process.env.ANTHROPIC_API_KEY.trim(),
+          'anthropic-version': '2023-06-01' 
+        }
+      }, apiRes => {
+        let d = ''; apiRes.on('data', c => d += c);
+        apiRes.on('end', () => {
+          const j = JSON.parse(d);
+          res.end(JSON.stringify({ reply: j.content[0].text }));
+        });
+      });
+      reqApi.write(postData); reqApi.end();
+    });
   }
 });
-document.getElementById('sb').addEventListener('click',send);
-document.getElementById('t').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
-});
-</script>
-</body></html>`);
-} else if (req.url === '/api/chat' && req.method === 'POST') {
-let body = '';
-req.on('data', chunk => body += chunk);
-req.on('end', async () => {
-try {
-const { messages } = JSON.parse(body);
-const postData = JSON.stringify({
-model: "claude-haiku-4-5-20251001",
-max_tokens: 4096,
-system: \`你是 KHYEN AI མཁྱེན།，专注藏族文化与佛法的智慧导师。1.默认中文。2.只有藏文提问才用藏文回答。3.语气谦逊。
-
-【哈达专题知识库专题知识库 ཁ་བཏགས།】
-- 哈达是藏族心灵与纯洁心意的最高象征。
-- 历史起源：源于古时领口涂抹糌粑粉（རྩམ་པས་དཀར་ཐིག་བརྒྱབས་པ）或系白羊毛绳习俗。
-- 分类规范：
-  1. མཇལ་དར། (拜见)  2. སློང་དར། (求亲)  3. དཔལ་དར། (坐床/升座)
-  4. དཔའ་དར། (嘉奖)  5. གདན་དར། (迎送)  6. སྙན་དར། (祈祷/献神)
-  7. སྤུ་དར། (祭奠)   8. གཡང་དར། (招财/祈福)\`,
-messages: messages
-});
-const reqApi = https.request({
-hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-headers: { 'Content-Type': 'application/json', 'x-api-key': MY_ANTHROPIC_KEY.trim(), 'anthropic-version': '2023-06-01' }
-}, (apiRes) => {
-let d = ''; apiRes.on('data', chunk => d += chunk);
-apiRes.on('end', () => {
-try {
-const j = JSON.parse(d);
-res.end(JSON.stringify({ reply: j.content[0].text }));
-} catch(e) { res.end(JSON.stringify({ reply: "解析偏差。" })); }
-});
-});
-reqApi.write(postData); reqApi.end();
-} catch(e) { res.end(JSON.stringify({ error: "通道异常。" })); }
-});
-}
-});
-server.listen(process.env.PORT || 10000, '0.0.0.0');
+server.listen(process.env.PORT || 10000);
