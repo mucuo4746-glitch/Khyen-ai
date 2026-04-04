@@ -4,6 +4,7 @@ const https = require('https');
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
+  // 1. 静态页面逻辑：复原所有 UI，确保界面不再“乱码”
   if (req.url === '/' || req.url === '/index.html') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!DOCTYPE html><html lang="zh"><head>
@@ -19,19 +20,20 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 #landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px}
 .l-title{font-size:48px;font-weight:300;letter-spacing:12px;color:#2a1a0a}
 .l-bo{font-family:'Noto Serif Tibetan',serif;font-size:20px;color:var(--gold);margin:10px 0}
-.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 40px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-top:30px}
+.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 40px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-top:30px;transition:0.3s}
+.l-btn:hover{background:var(--gold);color:white}
 #app{display:none;flex-direction:column;height:100vh}
-#header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-.h-btns{display:flex;gap:6px}
-.hbtn{background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+#header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.h-btns{display:flex;gap:8px}
+.hbtn{background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
-.m{max-width:85%;padding:14px;border-radius:12px;line-height:1.6}
-.u{align-self:flex-end;background:#e6d5b8}
-.a{align-self:flex-start;background:white;border:1px solid #eee}
-.bo{font-family:'Noto Serif Tibetan',serif;font-size:18px}
-#input-area{padding:16px;background:white;border-top:1px solid #eee;display:flex;gap:8px}
-#t{flex:1;height:44px;border:1px solid #ddd;border-radius:8px;padding:10px;outline:none}
-#sb{background:var(--red);color:white;border:none;padding:0 20px;border-radius:8px;cursor:pointer}
+.m{max-width:85%;padding:14px 18px;border-radius:16px;line-height:1.8;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
+.u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
+.a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
+.bo{font-family:'Noto Serif Tibetan',serif;font-size:18px;line-height:2.2}
+#input-area{padding:12px 16px 20px;background:white;border-top:1px solid #eee;display:flex;gap:8px;align-items:center}
+#t{flex:1;height:44px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;background:#fcfaf7}
+#sb{background:var(--red);color:white;border:none;padding:0 20px;height:44px;border-radius:12px;font-weight:bold;cursor:pointer}
 </style></head>
 <body>
 <div class="prayer-bar"></div>
@@ -43,8 +45,9 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <header id="header">
     <div style="font-family:'Noto Serif Tibetan'">མཁྱེན། KHYEN AI</div>
     <div class="h-btns">
-      <button class="hbtn" onclick="clearChat()">清空</button>
-      <button class="hbtn" onclick="location.reload()">首页</button>
+      <button class="hbtn" onclick="saveChat()">💾 保存</button>
+      <button class="hbtn" onclick="clearChat()">🗑️ 清空</button>
+      <button class="hbtn" onclick="location.reload()">🏠 首页</button>
     </div>
   </header>
   <div id="chat"></div>
@@ -52,14 +55,18 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 </div>
 <script>
 let h=[];
-function enterApp(){document.getElementById('landing').style.display='none';document.getElementById('app').style.display='flex';if(h.length===0)add('扎西德勒！我是 KHYEN མཁྱེན།。','a');}
+function enterApp(){document.getElementById('landing').style.display='none';document.getElementById('app').style.display='flex';if(h.length===0)add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！我是 KHYEN མཁྱེན།。','a');}
 function add(m,t){
   const d=document.createElement('div');d.className='m '+t;
   if(/[\\u0F00-\\u0FFF]/.test(m))d.classList.add('bo');
   d.innerHTML=marked.parse(m);document.getElementById('chat').appendChild(d);
   document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
-function clearChat(){document.getElementById('chat').innerHTML='';h=[];add('已为您清空。','a');}
+function clearChat(){if(confirm('清空对话？')){document.getElementById('chat').innerHTML='';h=[];add('已清空。','a');}}
+function saveChat(){
+  const txt=Array.from(document.querySelectorAll('.m')).map(m=>m.innerText).join('\\n\\n---\\n\\n');
+  const b=new Blob([txt],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Khyen_chat.txt';a.click();
+}
 async function send(){
   const v=document.getElementById('t').value.trim();if(!v)return;
   add(v,'u');h.push({role:'user',content:v});document.getElementById('t').value='';
@@ -71,11 +78,14 @@ async function send(){
       l.innerHTML=marked.parse(d.reply);
       if(/[\\u0F00-\\u0FFF]/.test(d.reply))l.classList.add('bo');
       h.push({role:'assistant',content:d.reply});
-    }else{l.innerText='API返回异常：'+(d.error||'未知错误');}
-  }catch(e){l.innerText='网络连接故障。';}
+    }else{l.innerText="提示："+(d.error||"连接波动");}
+  }catch(e){l.innerText="信号阻断。";}
+  document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
+document.getElementById('t').onkeydown=(e)=>{if(e.key==='Enter')send();};
 </script></body></html>`);
 
+  // 2. API 处理逻辑：严格校对 Anthropic 格式
   } else if (req.url === '/api/chat' && req.method === 'POST') {
     let body = '';
     req.on('data', c => body += c);
@@ -94,7 +104,7 @@ async function send(){
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': MY_ANTHROPIC_KEY.trim(),
+            'x-api-key': (MY_ANTHROPIC_KEY || '').trim(),
             'anthropic-version': '2023-06-01'
           }
         }, apiRes => {
@@ -108,18 +118,22 @@ async function send(){
                 res.end(JSON.stringify({ reply: j.content[0].text }));
               } else {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: j.error ? j.error.message : "API未返回正文" }));
+                res.end(JSON.stringify({ error: j.error ? j.error.message : "智慧无法显现" }));
               }
             } catch (e) {
-              res.end(JSON.stringify({ error: "解析失败" }));
+              res.end(JSON.stringify({ error: "解析偏差" }));
             }
           });
         });
-        reqApi.on('error', e => res.end(JSON.stringify({ error: e.message })));
+
+        reqApi.on('error', e => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: "连接中断" }));
+        });
         reqApi.write(postData);
         reqApi.end();
       } catch (e) {
-        res.end(JSON.stringify({ error: "数据格式错误" }));
+        res.end(JSON.stringify({ error: "格式错误" }));
       }
     });
   }
