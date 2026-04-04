@@ -1,6 +1,7 @@
 const http = require('http');
 const https = require('https');
 
+// 请确保你在 Render 的 Environment Variables 里设置了 ANTHROPIC_API_KEY
 const KEY = process.env.ANTHROPIC_API_KEY;
 
 const HTML = `<!DOCTYPE html>
@@ -15,37 +16,33 @@ const HTML = `<!DOCTYPE html>
         *{box-sizing:border-box;margin:0;padding:0}
         :root{--red:#8e2323;--gold:#c9a84c;--cream:#fdfbf7;--brown:#3d2b1f}
         body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown);height:100vh;overflow:hidden}
-        .pbar{position:fixed;top:0;left:0;right:0;height:5px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0 20%,#8e2323 20% 40%,#1a5a8a 40% 60%,#1a6b3a 60% 80%,#6b1a8a 80% 100%)}
         
-        /* 封面样式调整 */
-        #land{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;text-align:center;padding:20px}
-        .lt{font-size:clamp(30px, 8vw, 48px);letter-spacing:10px;color:#2a1a0a;margin-bottom:10px}
-        .lb{font-family:"Noto Serif Tibetan",serif;font-size:22px;color:var(--gold);margin-bottom:30px}
-        .ebtn{background:#2a1a0a;color:var(--gold);border:none;padding:15px 40px;font-size:16px;cursor:pointer;border-radius:30px;transition:0.3s}
-        
+        /* 封面 */
+        #land{position:fixed;inset:0;background:#fdfbf7;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;text-align:center}
+        .lt{font-size:42px;letter-spacing:8px;color:#2a1a0a;margin-bottom:5px}
+        .lb{font-family:"Noto Serif Tibetan",serif;font-size:20px;color:var(--gold);margin-bottom:30px}
+        .ebtn{background:#2a1a0a;color:var(--gold);border:none;padding:12px 30px;font-size:15px;cursor:pointer;border-radius:25px}
+
         #app{display:none;flex-direction:column;height:100vh}
         
-        /* 【关键：保持你满意的红边样式】 */
-        #hdr{background:var(--red);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 5px rgba(0,0,0,0.2)}
-        .htib{font-family:"Noto Serif Tibetan", serif !important; font-size: 1.2em; vertical-align: middle;}
-        .htxt{font-weight:bold; letter-spacing:1px; margin-left:5px}
+        /* 【核心：保留你满意的顶栏比例】 */
+        #hdr{background:var(--red);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+        .htib{font-family:"Noto Serif Tibetan", serif !important; font-size: 1.2em; vertical-align: middle}
+        .htxt{font-weight:bold; margin-left:6px; vertical-align: middle}
+        .hbtn{background:rgba(255,255,255,0.15); border:none; color:#fff; padding:4px 10px; border-radius:5px; font-size:12px; cursor:pointer}
 
-        #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:15px;background:#fdfbf7}
-        .m{max-width:88%;padding:14px 18px;border-radius:18px;line-height:1.7;overflow-wrap:break-word;font-size:15px}
-        .u{align-self:flex-end;background:#e6d5b8;color:#2a1a0a;border-bottom-right-radius:4px}
-        .a{align-self:flex-start;background:#fff;border:1px solid #eee;color:#3d2b1f;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+        #chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+        .m{max-width:85%;padding:12px 16px;border-radius:15px;line-height:1.6;font-size:15px}
+        .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:2px}
+        .a{align-self:flex-start;background:#fff;border:1px solid #eee;border-bottom-left-radius:2px}
+        .tib{font-family:"Noto Serif Tibetan",serif;line-height:2.2;font-size:17px}
         
-        /* 藏文内容排版优化 */
-        .tib{font-family:"Noto Serif Tibetan",serif;line-height:2.4;font-size:18px}
-        
-        #inp{padding:12px 16px 25px;background:#fff;border-top:1px solid #eee;display:flex;gap:10px;align-items:center}
-        #t{flex:1;height:46px;border:1px solid #ddd;border-radius:12px;padding:11px 15px;resize:none;outline:none;font-family:inherit;font-size:15px;background:#f9f7f2}
-        #sb{background:var(--red);color:#fff;border:none;width:70px;height:46px;border-radius:12px;font-weight:bold;cursor:pointer}
-        #sb:disabled{opacity:0.5}
+        #inp{padding:15px;background:#fff;border-top:1px solid #eee;display:flex;gap:10px}
+        #t{flex:1;height:42px;border:1px solid #ddd;border-radius:8px;padding:10px;resize:none;outline:none}
+        #sb{background:var(--red);color:#fff;border:none;padding:0 20px;border-radius:8px;cursor:pointer;font-weight:bold}
     </style>
 </head>
 <body>
-    <div class="pbar"></div>
     <div id="land">
         <div class="lt">KHYEN</div>
         <div class="lb">མཁྱེན། AI</div>
@@ -54,18 +51,18 @@ const HTML = `<!DOCTYPE html>
     <div id="app">
         <div id="hdr">
             <div><span class="htib">མཁྱེན།</span><span class="htxt">KHYEN AI</span></div>
-            <button onclick="location.reload()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 12px;border-radius:6px;font-size:12px">返回首页</button>
+            <button class="hbtn" onclick="location.reload()">首页</button>
         </div>
         <div id="chat"></div>
         <div id="inp">
-            <textarea id="t" placeholder="在此请教导师..."></textarea>
+            <textarea id="t" placeholder="请教导师..."></textarea>
             <button id="sb" onclick="send()">请教</button>
         </div>
     </div>
     <script>
         var C=document.getElementById('chat'),H=[];
         function hasTib(s){return /[\\u0F00-\\u0FFF]/.test(s)}
-        function enter(){document.getElementById('land').style.display='none';document.getElementById('app').style.display='flex';if(H.length===0)add('扎西德勒！我是 KHYEN AI，您的智慧向导。','a')}
+        function enter(){document.getElementById('land').style.display='none';document.getElementById('app').style.display='flex';if(!H.length)add('扎西德勒！我是 KHYEN AI。','a')}
         function add(msg,type){
             var d=document.createElement('div');
             d.className='m '+type;
@@ -76,17 +73,13 @@ const HTML = `<!DOCTYPE html>
         function send(){
             var v=document.getElementById('t').value.trim();if(!v)return;
             add(v,'u');H.push({role:'user',content:v});document.getElementById('t').value='';
-            document.getElementById('sb').disabled=true;
-            var loader=add('智者正在斟酌...','a');
+            var loader=add('...','a');
             fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:H})})
             .then(r=>r.json()).then(data=>{
-                if(data.reply){
-                    loader.innerHTML=marked.parse(data.reply);
-                    if(hasTib(data.reply)) loader.classList.add('tib');
-                    H.push({role:'assistant',content:data.reply});
-                } else { loader.innerText='导师暂未回应，请检查API设置。'; }
-            }).catch(()=>loader.innerText='连接中断，请稍后再试。')
-            .finally(()=>{document.getElementById('sb').disabled=false;C.scrollTop=C.scrollHeight});
+                loader.innerHTML=marked.parse(data.reply);
+                if(hasTib(data.reply)) loader.classList.add('tib');
+                H.push({role:'assistant',content:data.reply});
+            }).catch(()=>loader.innerText='连接导师失败');
         }
     </script>
 </body>
@@ -100,9 +93,9 @@ http.createServer((req, res) => {
             try {
                 const { messages } = JSON.parse(body);
                 const postData = JSON.stringify({
-                    model: "claude-3-5-sonnet-20240620", // 修正为绝对稳定的官方模型名
-                    max_tokens: 4096,
-                    system: "你是 KHYEN AI，专注藏族文化、佛法与藏语的智慧导师。请用温暖、深度的中文回答，Markdown格式。",
+                    model: "claude-3-5-sonnet-20240620",
+                    max_tokens: 2048,
+                    system: "你是 KHYEN AI，一位睿智的藏文化导师。请用亲切、智慧的中文回答，适时加入藏文祝福。",
                     messages: messages
                 });
                 const apiReq = https.request({
@@ -120,14 +113,16 @@ http.createServer((req, res) => {
                     apiRes.on('end', () => {
                         try {
                             const j = JSON.parse(out);
-                            const reply = (j.content && j.content[0]) ? j.content[0].text : "抱歉，我现在无法思考。";
+                            // 关键修复：确保能够正确读取 API 的返回字段内容
+                            const reply = (j.content && j.content[0]) ? j.content[0].text : "导师正在禅修，请稍后再试。";
                             res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'});
                             res.end(JSON.stringify({ reply }));
-                        } catch(e) { res.end(JSON.stringify({ error: "解析失败" })); }
+                        } catch(e) { res.end(JSON.stringify({ reply: "解析回应失败" })); }
                     });
                 });
+                apiReq.on('error', () => res.end(JSON.stringify({reply: "接口连接失败"})));
                 apiReq.write(postData); apiReq.end();
-            } catch(e) { res.end(JSON.stringify({ error: "请求失败" })); }
+            } catch(e) { res.end(JSON.stringify({ reply: "服务器内部错误" })); }
         });
     } else {
         res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
