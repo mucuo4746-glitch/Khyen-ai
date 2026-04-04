@@ -4,9 +4,9 @@ const https = require('https');
 const MY_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const server = http.createServer((req, res) => {
-if (req.url === '/' || req.url === '/index.html') {
-res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-res.end(`<!DOCTYPE html><html lang="zh"><head>
+  if (req.url === '/' || req.url === '/index.html') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!DOCTYPE html><html lang="zh"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KHYEN AI མཁྱེན།</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Serif+Tibetan:wght@400;700&display=swap" rel="stylesheet">
@@ -34,8 +34,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 #header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
 .h-btns{display:flex;gap:6px}
-.hbtn{background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;transition:background 0.3s}
-.hbtn:hover{background:rgba(255,255,255,0.4)}
+.hbtn{background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
 .m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
@@ -90,45 +89,65 @@ async function send(){
   add(v,'u');h.push({role:'user',content:v});document.getElementById('t').value='';
   const l=document.createElement('div');l.className='m a';l.innerText='智者斟酌中...';document.getElementById('chat').appendChild(l);
   try{
-    const r=await fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:h})});
     const d=await r.json();
     if(d.reply){
         l.innerHTML=marked.parse(d.reply);
         if(/[\\u0F00-\\u0FFF]/.test(d.reply))l.classList.add('bo');
         h.push({role:'assistant',content:d.reply});
-    }else{l.innerText='响应格式错误。';}
-  }catch(e){l.innerText='连接故障，请检查API密钥。';}
+    }else{l.innerText='响应格式错误：'+JSON.stringify(d);}
+  }catch(e){l.innerText='连接故障。';}
   document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
 }
 </script></body></html>`);
-} else if (req.url === '/api/chat' && req.method === 'POST') {
-let body = ''; req.on('data', c => body += c);
-req.on('end', () => {
-  try {
-    const { messages } = JSON.parse(body);
-    const postData = JSON.stringify({
-        model: "claude-3-5-sonnet-20240620",
-        max_tokens: 4096,
-        system: "你是 KHYEN AI མཁྱེན།，藏文化导师。记住：哈达（ཁ་བཏགས།）起源于领口抹糌粑粉（རྩམ་པས་དཀར་ཐིག་བརྒྱབས་པ）或系白羊毛绳的习俗，象征纯洁。语气谦逊睿智。",
-        messages: messages
-    });
-    const reqApi = https.request({
-        hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': MY_ANTHROPIC_KEY.trim(), 'anthropic-version': '2023-06-01' }
-    }, apiRes => {
-        let d = ''; apiRes.on('data', c => d += c);
-        apiRes.on('end', () => {
-            try {
-                const j = JSON.parse(d);
-                if(j.content && j.content[0]) {
-                    res.end(JSON.stringify({ reply: j.content[0].text }));
-                } else { res.end(JSON.stringify({ reply: "API返回异常。" })); }
-            } catch(e) { res.end(JSON.stringify({ reply: "解析错误。" })); }
+  } else if (req.url === '/api/chat' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const { messages } = JSON.parse(body);
+        const postData = JSON.stringify({
+          model: "claude-3-5-sonnet-20240620",
+          max_tokens: 4096,
+          system: "你是 KHYEN AI མཁྱེན།，藏文化导师。记住：哈达起源于领口抹糌粑粉或系白羊毛绳。语气谦逊。",
+          messages: messages
         });
+        const reqApi = https.request({
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': MY_ANTHROPIC_KEY.trim(),
+            'anthropic-version': '2023-06-01'
+          }
+        }, apiRes => {
+          let d = '';
+          apiRes.on('data', c => d += c);
+          apiRes.on('end', () => {
+            try {
+              const j = JSON.parse(d);
+              if (j.content && j.content[0]) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ reply: j.content[0].text }));
+              } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ reply: "API消息提取失败。", raw: j }));
+              }
+            } catch (e) {
+              res.writeHead(500);
+              res.end(JSON.stringify({ error: "JSON解析失败" }));
+            }
+          });
+        });
+        reqApi.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
+        reqApi.write(postData);
+        reqApi.end();
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: "请求格式错误" }));
+      }
     });
-    reqApi.write(postData); reqApi.end();
-  } catch(e) { res.end(JSON.stringify({ reply: "请求处理失败。" })); }
-});
-}
+  }
 });
 server.listen(process.env.PORT || 10000);
