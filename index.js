@@ -34,12 +34,15 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .l-mantra{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:rgba(201,168,76,0.5);letter-spacing:3px}
 #app{display:none;flex-direction:column;height:100vh}
 #header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.h-title{font-weight:bold;font-size:1em;font-family:"Noto Serif SC",serif}
+.h-bo{font-family:'Noto Serif Tibetan',serif;font-size:0.9em}
 .h-btns{display:flex;gap:6px}
 .hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
 .m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
 .a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
+.a p{margin:8px 0}
 .bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:17px}
 .acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed #eee}
 .abtn{background:none;border:1px solid #ddd;color:#888;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
@@ -68,7 +71,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 </div>
 <div id="app">
   <div id="header">
-    <div class="h-title"><span style="font-family:'Noto Serif Tibetan'">མཁྱེན།</span> KHYEN AI</div>
+    <div class="h-title"><span class="h-bo">མཁྱེན།</span> KHYEN AI</div>
     <div class="h-btns">
       <button class="hbtn" id="save-btn">💾 保存</button>
       <button class="hbtn" id="clear-btn">🗑️ 清空</button>
@@ -84,7 +87,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 <script>
 const chat=document.getElementById('chat');
 let h=[];
-function hasBo(t){return /[\\u0F00-\\u0FFF]/.test(t)}
+function hasBo(t){return /[\u0F00-\u0FFF]/.test(t)}
 function showToast(msg){
   const t=document.createElement('div');
   t.className='toast';t.innerText=msg;
@@ -94,7 +97,7 @@ function showToast(msg){
 function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན། AI。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。','a');
+  if(h.length===0) add('\u0f56\u0f80\u0f0b\u0f45\u0f72\u0f66\u0f0b\u0f56\u0f51\u0f7a\u0f0b\u0f63\u0f7a\u0f42\u0f66\u0f0b 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN \u0f58\u0f40\u0f61\u0f7a\u0f53\u0f0b AI。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日、饮食，或进行藏汉英翻译。','a');
 }
 function add(msg,type){
   const d=document.createElement('div');
@@ -126,24 +129,19 @@ async function send(){
   document.getElementById('sb').disabled=true;
   const loader=add('智者正在斟酌...','a');
   try{
-    const r=await fetch('/api/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({messages:h})
-    });
+    const r=await fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
     const data=await r.json();
-    if(data.reply){
-        loader.innerHTML=marked.parse(data.reply);
-        if(hasBo(data.reply)) loader.classList.add('bo');
-        const acts=document.createElement('div');
-        acts.className='acts';
-        const cb=document.createElement('button');
-        cb.className='abtn';cb.innerText='📋 复制';
-        cb.onclick=()=>navigator.clipboard.writeText(data.reply).then(()=>showToast('已复制 ✓'));
-        acts.appendChild(cb);
-        loader.appendChild(acts);
-        h.push({role:'assistant',content:data.reply});
-    } else { loader.innerText = '智者暂时无法回应：' + (data.error || '解析偏差'); }
+    loader.innerHTML=marked.parse(data.reply);
+    if(hasBo(data.reply)) loader.classList.add('bo');
+    const acts=document.createElement('div');
+    acts.className='acts';
+    const cb=document.createElement('button');
+    cb.className='abtn';cb.innerText='📋 复制';
+    cb.onclick=()=>navigator.clipboard.writeText(data.reply).then(()=>showToast('已复制 ✓'));
+    acts.appendChild(cb);
+    loader.appendChild(acts);
+    h.push({role:'assistant',content:data.reply});
+    if(h.length>20) h=h.slice(-20);
   }catch(e){loader.innerText='连接中断，请重试。';}
   document.getElementById('sb').disabled=false;
   chat.scrollTop=chat.scrollHeight;
@@ -158,7 +156,7 @@ document.getElementById('save-btn').addEventListener('click',()=>{
     const cl=m.cloneNode(true);
     const a=cl.querySelector('.acts');if(a)a.remove();
     return cl.innerText.trim();
-  }).join('\\n\\n---\\n\\n');
+  }).join('\n\n---\n\n');
   const blob=new Blob([msgs],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -169,14 +167,10 @@ document.getElementById('save-btn').addEventListener('click',()=>{
 document.getElementById('clear-btn').addEventListener('click',()=>{
   if(confirm('确定清空所有对话？')){
     chat.innerHTML='';h=[];
-    add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
+    add('\u5bf9\u8bdd\u5df2\u6e05\u7a7a\u3002\u0f56\u0f80\u0f0b\u0f45\u0f72\u0f66\u0f0b\u0f56\u0f51\u0f7a\u0f0b\u0f63\u0f7a\u0f42\u0f66\u0f0d','a');
   }
 });
 document.getElementById('sb').addEventListener('click',send);
-document.getElementById('t').addEventListener('input', function(){
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
-});
 document.getElementById('t').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
 });
@@ -189,9 +183,37 @@ document.getElementById('t').addEventListener('keydown',e=>{
             try {
                 const { messages } = JSON.parse(body);
                 const postData = JSON.stringify({
-                    model: "claude-3-5-sonnet-20240620",
-                    max_tokens: 1024,
-                    system: "你是 KHYEN AI མཁྱེན།，专注藏族文化、佛法与藏语的智慧导师。མཁྱེན། 意为'智慧、全知、洞见'。请用温暖、深度的藏族学者口吻回答。",
+                    model: "claude-haiku-4-5-20251001",
+                    max_tokens: 4096,
+                    system: `你是 KHYEN AI，专注藏族文化、佛法与藏语的智慧导师。Khyen意为智慧、全知、洞见。
+
+【语言规则】
+- 默认只用中文回答
+- 只有用户明确用藏文提问时才用藏文回答
+- 用藏文回答时使用标准藏语自然对话，不确定时用中文补充
+- 不确定藏文写法时直接用中文，严禁猜测
+- 藏文段落单独成行，不与中文混排
+
+【哈达专项知识】
+- 哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达
+- 历史起源：古时用白羊毛绳挂于脖子表达纯洁心意，后演变为哈达
+- 种类：见面哈达、求子哈达、活佛坐床哈达(dpal dar)、勇士哈达、座垫哈达、祈愿哈达、覆盖遗体哈达、招福哈达
+- 活佛坐床专用：dpal dar
+- 敬献礼仪：向上位者双手奉上，向下位者挂于对方脖子，平辈互赠不挂脖
+- 哈达颜色以白色为主代表心意纯洁，鲜花不能替代哈达
+
+【知识范围】
+- 藏传佛教、菩提行论经典、藏族节日与习俗
+- 藏族饮食文化、藏医基础知识、藏族历史
+- 藏汉英三语翻译
+- 藏族艺术、唐卡、音乐、舞蹈
+
+【回答风格】
+- 温暖有深度，像博学睿智的藏族学者
+- 哲学宗教问题展现智慧，用生动比喻解释
+- 生活文化问题用自然亲切方式回答
+- 使用Markdown格式，有条理
+- 不幼稚，有藏族文化气息`,
                     messages: messages
                 });
                 const reqApi = https.request({
@@ -202,10 +224,8 @@ document.getElementById('t').addEventListener('keydown',e=>{
                     apiRes.on('end', () => {
                         try {
                             const j = JSON.parse(d);
-                            if (j.content && j.content[0]) {
-                                res.end(JSON.stringify({ reply: j.content[0].text }));
-                            } else { res.end(JSON.stringify({ error: "API返回空内容" })); }
-                        } catch(e) { res.end(JSON.stringify({ error: "解析偏差。" })); }
+                            res.end(JSON.stringify({ reply: j.content[0].text }));
+                        } catch(e) { res.end(JSON.stringify({ reply: "解析偏差。" })); }
                     });
                 });
                 reqApi.write(postData); reqApi.end();
