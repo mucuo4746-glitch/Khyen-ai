@@ -3,7 +3,7 @@ const https = require('https');
 
 const KEY = process.env.ANTHROPIC_API_KEY;
 
-const SYSTEM = `你是 KHYEN AI，专注藏族文化、佛法与藏语的智慧导师。默认只用中文回答。只有用户明确用藏文提问时才用藏文回答。不确定藏文时直接用中文替代。温暖有深度。使用Markdown格式回答。
+const SYSTEM = `你是 KHYEN AI，专注藏族文化、佛法与藏语的智慧导师。默认只用中文回答。只有用户明确用藏文提问时才用藏文回答。
 
 【哈达专项知识 ཁ་བཏགས།】
 - 哈达是藏族文化中代表纯洁心意的礼物，藏人从生到死都离不开哈达。
@@ -76,7 +76,7 @@ const HTML = `<!DOCTYPE html>
     <script>
         var C=document.getElementById('chat'), H=[], B=document.getElementById('sb');
         function hasTib(s){return /[\\u0F00-\\u0FFF]/.test(s)}
-        function enter(){ document.getElementById('land').style.display='none'; document.getElementById('app').style.display='flex'; if(!H.length) add('扎西德勒！欢迎来到 KHYEN AI。','a'); }
+        function enter(){ document.getElementById('land').style.display='none'; document.getElementById('app').style.display='flex'; if(!H.length) add('扎西德勒！我是 KHYEN AI。','a'); }
         function add(msg,type){
             var d=document.createElement('div'); d.className='m '+type;
             if(hasTib(msg)) d.classList.add('tib');
@@ -92,69 +92,61 @@ const HTML = `<!DOCTYPE html>
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({messages:H})
             })
-            .then(function(r){ return r.json(); })
-            .then(function(data){
-                var reply = data.reply || '暂时无法回应。';
-                loader.innerHTML=marked.parse(reply);
-                if(hasTib(reply)) loader.classList.add('tib');
-                H.push({role:'assistant',content:reply});
+            .then(r => r.json())
+            .then(data => {
+                loader.innerHTML = marked.parse(data.reply);
+                if(hasTib(data.reply)) loader.classList.add('tib');
+                H.push({role:'assistant',content:data.reply});
             })
-            .catch(function(){ loader.innerText='连接失败，请重试。'; })
-            .finally(function(){ B.disabled=false; C.scrollTop=C.scrollHeight; });
+            .catch(e => { loader.innerText = '导师连接中断，请重试。'; })
+            .finally(() => { B.disabled=false; C.scrollTop=C.scrollHeight; });
         }
     </script>
 </body>
 </html>`;
 
-http.createServer(function(req, res) {
+http.createServer((req, res) => {
     if (req.url === '/api/chat' && req.method === 'POST') {
-        var body = '';
-        req.on('data', function(d){ body += d; });
-        req.on('end', function(){
-            try {
-                var msgs = JSON.parse(body).messages;
-                var data = JSON.stringify({
-                    model: 'claude-3-5-sonnet-20240620', // 使用最稳定的 3.5 Sonnet
-                    max_tokens: 4096,
-                    system: SYSTEM,
-                    messages: msgs
-                });
-                var r = https.request({
-                    hostname: 'api.anthropic.com',
-                    path: '/v1/messages',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': KEY.trim(),
-                        'anthropic-version': '2023-06-01'
+        let body = '';
+        req.on('data', d => { body += d; });
+        req.on('end', () => {
+            const data = JSON.stringify({
+                model: 'claude-3-sonnet-20240229', // 换回最通用版本名
+                max_tokens: 2048,
+                system: SYSTEM,
+                messages: JSON.parse(body).messages
+            });
+            const options = {
+                hostname: 'api.anthropic.com',
+                path: '/v1/messages',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': KEY.trim(),
+                    'anthropic-version': '2023-06-01'
+                }
+            };
+            const apiReq = https.request(options, apiRes => {
+                let s = '';
+                apiRes.on('data', d => { s += d; });
+                apiRes.on('end', () => {
+                    try {
+                        const j = JSON.parse(s);
+                        // 如果有错，直接把 API 的报错发回前端，好让我们知道到底发生了什么
+                        const reply = (j.content && j.content[0]) ? j.content[0].text : ("错误: " + (j.error ? j.error.message : "无法获取回复"));
+                        res.writeHead(200, {'Content-Type': 'application/json'});
+                        res.end(JSON.stringify({reply}));
+                    } catch(e) {
+                        res.end(JSON.stringify({reply: "解析异常"}));
                     }
-                }, function(ar){
-                    var out = '';
-                    ar.on('data', function(d){ out += d; });
-                    ar.on('end', function(){
-                        try {
-                            var j = JSON.parse(out);
-                            var txt = (j.content && j.content[0]) ? j.content[0].text : '暂时无法回应，请重试。';
-                            res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'});
-                            res.end(JSON.stringify({reply: txt}));
-                        } catch(e) {
-                            res.writeHead(200, {'Content-Type': 'application/json'});
-                            res.end(JSON.stringify({reply: '解析失败，请检查 API 状态。'}));
-                        }
-                    });
                 });
-                r.on('error', function(e){
-                    res.writeHead(200, {'Content-Type': 'application/json'});
-                    res.end(JSON.stringify({reply: '连接 API 失败'}));
-                });
-                r.write(data);
-                r.end();
-            } catch(e) {
-                res.end(JSON.stringify({reply: '请求解析失败'}));
-            }
+            });
+            apiReq.on('error', e => { res.end(JSON.stringify({reply: "网络异常"})); });
+            apiReq.write(data);
+            apiReq.end();
         });
     } else {
         res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
         res.end(HTML);
     }
-}).listen(process.env.PORT || 10000, '0.0.0.0');
+}).listen(process.env.PORT || 10000);
