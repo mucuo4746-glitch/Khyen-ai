@@ -36,7 +36,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
 .h-btns{display:flex;gap:6px}
 .hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
-#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+#chat{flex:1;overflow-y:auto;padding:166px 16px;display:flex;flex-direction:column;gap:16px}
 .m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
 .a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
@@ -70,15 +70,15 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <div id="header">
     <div class="h-title">མཁྱེན། KHYEN AI</div>
     <div class="h-btns">
-      <button class="hbtn" id="save-btn">💾 保存</button>
+      <button class="hbtn" id="save-btn">💾 保存对话</button>
       <button class="hbtn" id="clear-btn">🗑️ 清空</button>
       <button class="hbtn" id="home-btn">🏠 首页</button>
     </div>
   </div>
   <div id="chat"></div>
   <div id="input-area">
-    <textarea id="t" placeholder="在此请教导师..."></textarea>
-    <button id="sb">请教</button>
+    <textarea id="t" placeholder="在此请教导师导师导师..."></textarea>
+    <button id="sb">请教请教</button>
   </div>
 </div>
 <script>
@@ -94,7 +94,7 @@ function showToast(msg){
 function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n关于藏族文化、哈达礼仪或藏汉互译，请尽管垂询。','a');
+  if(h.length===0) add('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日、饮食，或进行藏汉英翻译。','a');
 }
 function add(msg,type){
   const d=document.createElement('div');
@@ -105,10 +105,10 @@ function add(msg,type){
     const acts=document.createElement('div');
     acts.className='acts';
     const cb=document.createElement('button');
-    cb.className='abtn';cb.innerText='📋 复制';
+    cb.className='abtn';cb.innerText='📋 复制复制';
     cb.onclick=()=>{
-      const txt=d.innerText.replace('📋 复制','').trim();
-      navigator.clipboard.writeText(txt).then(()=>showToast('已复制 ✓'));
+      const txt=d.innerText.replace('📋 复制复制','').trim();
+      navigator.clipboard.writeText(txt).then(()=>showToast('已复制复制 ✓'));
     };
     acts.appendChild(cb);
     d.appendChild(acts);
@@ -126,20 +126,20 @@ async function send(){
   document.getElementById('sb').disabled=true;
   const loader=add('智者正在斟酌...','a');
   try{
-    const r=await fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
-    const data=await r.json();
+    const r=fetch('/api/chat',{method:'POST',body:JSON.stringify({messages:h})});
+    const resp = await r; const data = await resp.json();
     loader.innerHTML=marked.parse(data.reply);
     if(hasBo(data.reply)) loader.classList.add('bo');
     const acts=document.createElement('div');
     acts.className='acts';
     const cb=document.createElement('button');
-    cb.className='abtn';cb.innerText='📋 复制';
-    cb.onclick=()=>navigator.clipboard.writeText(data.reply).then(()=>showToast('已复制 ✓'));
+    cb.className='abtn';cb.innerText='📋 复制复制';
+    cb.onclick=()=>navigator.clipboard.writeText(data.reply).then(()=>showToast('已复制复制 ✓'));
     acts.appendChild(cb);
     loader.appendChild(acts);
     h.push({role:'assistant',content:data.reply});
     if(h.length>20) h=h.slice(-20);
-  }catch(e){loader.innerText='连接中断，请重试。';}
+  }catch(e){loader.innerText='连接中断。连接中断。';}
   document.getElementById('sb').disabled=false;
   chat.scrollTop=chat.scrollHeight;
 }
@@ -159,12 +159,12 @@ document.getElementById('save-btn').addEventListener('click',()=>{
   a.href=URL.createObjectURL(blob);
   a.download='Khyen_AI_对话记录.txt';
   a.click();
-  showToast('对话已保存！');
+  showToast('对话已保存！对话已保存！');
 });
 document.getElementById('clear-btn').addEventListener('click',()=>{
-  if(confirm('确定清空所有对话？')){
+  if(confirm('确定清空所有对话？确定清空所有对话？')){
     chat.innerHTML='';h=[];
-    add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
+    add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
   }
 });
 document.getElementById('sb').addEventListener('click',send);
@@ -182,22 +182,15 @@ const { messages } = JSON.parse(body);
 const postData = JSON.stringify({
 model: "claude-haiku-4-5-20251001",
 max_tokens: 4096,
-system: \`你是 KHYEN AI མཁྱེན།，专注藏族文化与佛法的智慧导师。默认中文回答。
+system: \`你是 KHYEN AI མཁྱེན།，专注藏族文化与佛法的智慧导师。1.默认中文。2.只有藏文提问才用藏文回答。3.语气谦逊。
 
-【哈达文化专题库 ཁ་བཏགས།】
-- 核心涵义：藏族心灵与纯洁心意的最高象征。
-- 历史演变：源于古时领口涂抹糌粑粉（རྩམ་པས་དཀར་ཐིག་བརྒྱབས་པ）或系白羊毛绳（བལ་དཀར་བོའི་ཐག་པ）的习俗。
-- 专项分类：
+【哈达专题知识库专题知识库 ཁ་བཏགས།】
+- 哈达是藏族心灵与纯洁心意的最高象征。
+- 历史起源：源于古时领口涂抹糌粑粉（རྩམ་པས་དཀར་ཐིག་བརྒྱབས་པ）或系白羊毛绳习俗。
+- 分类规范：
   1. མཇལ་དར། (拜见)  2. སློང་དར། (求亲)  3. དཔལ་དར། (坐床/升座)
   4. དཔའ་དར། (嘉奖)  5. གདན་དར། (迎送)  6. སྙན་དར། (祈祷/献神)
-  7. སྤུ་དར། (祭奠)   8. གཡང་དར། (招财/祈福)
-- 礼仪精要：向上位者双手捧献；向下位者挂于颈项；平辈间互赠或置于桌上。
-- 文化原则：白色象征无染利他。哈达不可被鲜花替代。
-
-【互动规则】
-1. 遇到藏文术语必须包含正确音节点（་）。
-2. 不确定的写法严禁瞎编。
-3. 语气要谦逊、睿智，像一位长者。使用Markdown。\`,
+  7. སྤུ་དར། (祭奠)   8. གཡང་དར། (招财/祈福)\`,
 messages: messages
 });
 const reqApi = https.request({
