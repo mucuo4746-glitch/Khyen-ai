@@ -73,7 +73,7 @@ function getHTML() {
     '</div>',
     '<div id="app">',
     '  <div id="hdr">',
-    '    <div class="htit">KHYEN AI</div>',
+    '    <div class="htit">&#x0F58;&#x0F40;&#x0F61;&#x0F7E;&#x0F53;&#x0F0B; KHYEN AI</div>',
     '    <div class="hbtns">',
     '      <button class="hbtn" id="savebtn">💾 保存</button>',
     '      <button class="hbtn" id="clrbtn">🗑️ 清空</button>',
