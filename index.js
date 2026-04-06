@@ -12,7 +12,6 @@ const SYSTEM_PROMPT = `You are Khyen མཁྱེན།, an AI assistant special
 - Quality over quantity: one correct Tibetan sentence is worth more than ten plausible-sounding wrong ones
 
 ## PART 1 — EPISTEMOLOGICAL FOUNDATION
-
 ### What you are NOT:
 - You are NOT a native Tibetan speaker
 - You do NOT have reliable intuition about Tibetan orthography
@@ -21,7 +20,7 @@ const SYSTEM_PROMPT = `You are Khyen མཁྱེན།, an AI assistant special
 
 ### The core failure mode to avoid:
 Never construct confident explanations for INCORRECT Tibetan.
-Example: Claiming ཞི་བ་ལྷོ། is correct for Śāntideva — WRONG. Correct is ཞི་བ་ལྷ།
+WRONG: Claiming ཞི་བ་ལྷོ། is correct for Śāntideva. CORRECT: ཞི་བ་ལྷ།
 
 ### When uncertain:
 State: བདག་ལ་ངེས་པ་མེད། [needs verification by Adelina]
@@ -42,17 +41,17 @@ NEVER guess. NEVER invent. NEVER rationalize.
 
 ## PART 3 — TIBETAN GRAMMAR
 - SOV word order — verb ALWAYS last
-- Case particles mandatory: གིས། ལ། ནས། གི། etc.
+- Case particles mandatory: གིས། ལ། ནས། གི།
 - NEVER invent vocabulary
-- Pre-check: verb at end? particles correct? word attested?
+- Correct: བདག་གིས་ཁྱེད་རང་ལ་རོགས་རམ་བྱེད་ཐུབ།
 
 ## PART 4 — APPROVED VOCABULARY
 Tier 1: བདག། ཁྱེད། ཡིན། རེད། འདུག། ཡོད། མེད། ཐུགས་རྗེ་ཆེ། བཀྲ་ཤིས་བདེ་ལེགས།
 Tier 2: སེམས་ཅན། བྱང་ཆུབ། དམ་ཆོས། སངས་རྒྱས། བླ་མ། དཀོན་མཆོག།
 
 ### Verified patterns:
-  ཉན་ཡག་ཞིག་བྱས་ན་གོ་ཡག་ཞིག་ཡོང་། (If one listens well, one understands well)
-  དར་སྔ་ལ་ངག་ནས་ངག་ཏུ་བརྒྱུད་ནས་འོངས་པ། (transmitted orally since ancient times)
+  ཉན་ཡག་ཞིག་བྱས་ན་གོ་ཡག་ཞིག་ཡོང་།
+  དར་སྔ་ལ་ངག་ནས་ངག་ཏུ་བརྒྱུད་ནས་འོངས་པ།
 
 ### Fixed phrases:
   སྐུ་ཁམས་བཟང་། = How are you (formal)
@@ -61,21 +60,20 @@ Tier 2: སེམས་ཅན། བྱང་ཆུབ། དམ་ཆོས། 
   བདག་ལ་ངེས་པ་མེད། = I am not certain
 
 ## PART 5 — TRANSLATION
-Four pairs: Tibetan↔English, Tibetan↔Chinese
+Four pairs: Tibetan to/from English, Tibetan to/from Chinese
 Buddhist terms: སེམས་ཅན།=sentient beings, བྱང་ཆུབ་སེམས་དཔའ།=bodhisattva
 
 ## PART 6 — CULTURAL KNOWLEDGE
 - Buddhist schools: རྙིང་མ། བཀའ་བརྒྱུད། ས་སྐྱ། དགེ་ལུགས།
-- Calendar: ལོ་རྟགས། / ལོ་ཐོ། festivals: དུས་ཆེན། astrology: སྐར་རྩིས།
-- Medicine: གསོ་བ་རིག་པ། Regions: Bhutan, Ladakh, Amdo, Kham, U-Tsang
+- Calendar: ལོ་རྟགས། festivals: དུས་ཆེན། astrology: སྐར་རྩིས།
 - Khata ཁ་བཏགས།: white=purity; offer both hands to superiors; place around neck for inferiors
+- Regions: Bhutan, Ladakh, Amdo, Kham, U-Tsang
 
 ## RESPONSE STYLE
 - Default language: Chinese unless user writes in Tibetan or English
 - Warm, scholarly, precise like a Tibetan teacher
 - Use Markdown formatting
 - Never fabricate Tibetan — flag uncertainty openly`;
-
 const HTML_PAGE = `<!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -167,42 +165,41 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
     <textarea id="t" placeholder="在此请教导师... Ask anything about Tibetan culture..."></textarea>
     <button id="sb" onclick="send()">请教</button>
   </div>
-</div>
-<script>
-var chat = document.getElementById('chat');
-var h = [];
-var quickHidden = false;
+</div>`;
+const server = http.createServer((req, res) => {
+  if(req.url==='/'||req.url==='/index.html'){
+    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});
+    res.end(HTML_PAGE + `<script>
+var chat=document.getElementById('chat');
+var h=[];
+var quickHidden=false;
 
-function hasBo(t){ return /\u0F00/.test(t) || /\u0F40/.test(t) || /\u0F60/.test(t); }
+function hasBo(t){return /[\u0F00-\u0FFF]/.test(t);}
 
 function md(t){
   if(!t) return '';
-  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  t = t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1<\/strong>');
-  t = t.replace(/\*([^*]+)\*/g,'<em>$1<\/em>');
-  t = t.replace(/^### (.+)$/gm,'<h3>$1<\/h3>');
-  t = t.replace(/^## (.+)$/gm,'<h2>$1<\/h2>');
-  t = t.replace(/^# (.+)$/gm,'<h1>$1<\/h1>');
-  t = t.replace(/^\- (.+)$/gm,'<li>$1<\/li>');
-  t = t.replace(/(<li>[^<]*<\/li>\n?)+/g,'<ul>$&<\/ul>');
-  t = t.replace(/\n\n/g,'<\/p><p>').replace(/\n/g,'<br>');
-  t = '<p>' + t + '<\/p>';
-  t = t.replace(/<p>(<h[123]>)/g,'$1').replace(/(<\/h[123]>)<\/p>/g,'$1');
-  t = t.replace(/<p>(<ul>)/g,'$1').replace(/(<\/ul>)<\/p>/g,'$1');
+  t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  t=t.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  t=t.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  t=t.replace(/^\- (.+)$/gm,'<li>$1</li>');
+  t=t.replace(/\n\n/g,'<br><br>');
+  t=t.replace(/\n/g,'<br>');
   return t;
 }
 
 function showToast(msg){
   var el=document.createElement('div');
-  el.className='toast'; el.innerText=msg;
+  el.className='toast';el.innerText=msg;
   document.body.appendChild(el);
-  setTimeout(function(){ el.remove(); },2200);
+  setTimeout(function(){el.remove();},2200);
 }
 
 function hideQuick(){
   if(!quickHidden){
     var q=document.getElementById('quick-btns');
-    if(q){ q.style.display='none'; quickHidden=true; }
+    if(q){q.style.display='none';quickHidden=true;}
   }
 }
 
@@ -210,7 +207,7 @@ function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
   if(h.length===0){
-    addMsg('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 **KHYEN མཁྱེན།**。\n\n欢迎向我询问藏传佛教、藏族文化、历史、节日、哈达礼仪，或进行藏汉英翻译。点击下方快捷按钮开始，或直接提问。','a');
+    addMsg('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\\n\\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\\n\\n欢迎向我询问藏传佛教、藏族文化、历史、节日、哈达礼仪，或进行藏汉英翻译。点击下方快捷按钮开始，或直接提问。','a');
   }
 }
 
@@ -219,17 +216,17 @@ function goHome(){
   document.getElementById('app').style.display='none';
 }
 
-function addMsg(msg, type){
+function addMsg(msg,type){
   var d=document.createElement('div');
   d.className='m '+type;
   if(type==='a'){
     d.innerHTML=md(msg);
-    if(/[\u0F00-\u0FFF]/.test(msg)) d.classList.add('bo');
+    if(hasBo(msg)) d.classList.add('bo');
     var acts=document.createElement('div');
     acts.className='acts';
     var cb=document.createElement('button');
-    cb.className='abtn'; cb.innerText='📋 复制';
-    cb.onclick=function(){ navigator.clipboard.writeText(msg).then(function(){ showToast('已复制 ✓'); }); };
+    cb.className='abtn';cb.innerText='📋 复制';
+    (function(m){cb.onclick=function(){navigator.clipboard.writeText(m).then(function(){showToast('已复制 ✓');});};})(msg);
     acts.appendChild(cb);
     d.appendChild(acts);
   } else {
@@ -254,15 +251,14 @@ function send(){
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({messages:h})
-  }).then(function(r){ return r.json(); }).then(function(data){
+  }).then(function(r){return r.json();}).then(function(data){
     loader.innerHTML=md(data.reply);
-    if(/[\u0F00-\u0FFF]/.test(data.reply)) loader.classList.add('bo');
+    if(hasBo(data.reply)) loader.classList.add('bo');
     var acts=document.createElement('div');
     acts.className='acts';
     var cb=document.createElement('button');
-    cb.className='abtn'; cb.innerText='📋 复制';
-    var reply=data.reply;
-    cb.onclick=function(){ navigator.clipboard.writeText(reply).then(function(){ showToast('已复制 ✓'); }); };
+    cb.className='abtn';cb.innerText='📋 复制';
+    (function(m){cb.onclick=function(){navigator.clipboard.writeText(m).then(function(){showToast('已复制 ✓');});};})(data.reply);
     acts.appendChild(cb);
     loader.appendChild(acts);
     h.push({role:'assistant',content:data.reply});
@@ -284,9 +280,9 @@ function quickSend(msg){
 function saveChat(){
   var msgs=Array.from(document.querySelectorAll('.m')).map(function(m){
     var cl=m.cloneNode(true);
-    var a=cl.querySelector('.acts'); if(a) a.remove();
+    var a=cl.querySelector('.acts');if(a) a.remove();
     return cl.innerText.trim();
-  }).join('\n\n---\n\n');
+  }).join('\\n\\n---\\n\\n');
   var blob=new Blob([msgs],{type:'text/plain;charset=utf-8'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -297,7 +293,7 @@ function saveChat(){
 
 function clearChat(){
   if(confirm('确定清空所有对话？')){
-    chat.innerHTML=''; h=[]; quickHidden=false;
+    chat.innerHTML='';h=[];quickHidden=false;
     addMsg('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།','a');
   }
 }
@@ -305,14 +301,7 @@ function clearChat(){
 document.getElementById('t').addEventListener('keydown',function(e){
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
 });
-</script>
-</body>
-</html>`;
-
-const server = http.createServer((req, res) => {
-  if(req.url==='/'||req.url==='/index.html'){
-    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});
-    res.end(HTML_PAGE);
+<\/script></body></html>`);
   } else if(req.url==='/api/chat'&&req.method==='POST'){
     let body='';
     req.on('data',chunk=>body+=chunk);
