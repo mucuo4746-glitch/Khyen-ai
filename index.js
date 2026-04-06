@@ -290,7 +290,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
     <div class="feat"><div class="feat-i">☸️</div><div class="feat-t">佛法</div><div class="feat-b">དམ་ཆོས།</div></div>
     <div class="feat"><div class="feat-i">🗓️</div><div class="feat-t">节日</div><div class="feat-b">དུས་ཆེན།</div></div>
   </div>
-  <button class="l-btn" id="enter-btn">进入 · Enter</button>
+  <button class="l-btn" onclick="document.getElementById('landing').style.display='none';document.getElementById('app').style.display='flex';enterApp();">进入 · Enter</button>
   <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
 </div>
 
@@ -416,8 +416,6 @@ function quickSend(msg){
 }
 
 // 事件绑定
-document.getElementById('enter-btn').addEventListener('click', enterApp);
-
 document.getElementById('home-btn').addEventListener('click', () => {
   document.getElementById('landing').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
