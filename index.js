@@ -298,9 +298,9 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <div id="header">
     <div class="h-title">མཁྱེན། KHYEN AI</div>
     <div class="h-btns">
-      <button class="hbtn" id="save-btn">💾 保存</button>
-      <button class="hbtn" id="clear-btn">🗑️ 清空</button>
-      <button class="hbtn" id="home-btn">🏠 首页</button>
+      <button class="hbtn" onclick="savChat()">💾 保存</button>
+      <button class="hbtn" onclick="clrChat()">🗑️ 清空</button>
+      <button class="hbtn" onclick="document.getElementById('landing').style.display='flex';document.getElementById('app').style.display='none';">🏠 首页</button>
     </div>
   </div>
   <div id="chat">
@@ -314,8 +314,8 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
     </div>
   </div>
   <div id="input-area">
-    <textarea id="t" placeholder="在此请教导师... Ask anything about Tibetan culture..."></textarea>
-    <button id="sb">请教</button>
+    <textarea id="t" placeholder="在此请教导师... Ask anything about Tibetan culture..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
+    <button id="sb" onclick="send()">请教</button>
   </div>
 </div>
 
@@ -415,13 +415,8 @@ function quickSend(msg){
   send();
 }
 
-// 事件绑定
-document.getElementById('home-btn').addEventListener('click', () => {
-  document.getElementById('landing').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-});
-
-document.getElementById('save-btn').addEventListener('click', () => {
+// 保存和清空
+function savChat(){
   const msgs = Array.from(document.querySelectorAll('.m')).map(m => {
     const cl = m.cloneNode(true);
     const a = cl.querySelector('.acts');
@@ -434,22 +429,16 @@ document.getElementById('save-btn').addEventListener('click', () => {
   a.download = 'Khyen_AI_对话记录.txt';
   a.click();
   showToast('对话已保存！');
-});
+}
 
-document.getElementById('clear-btn').addEventListener('click', () => {
+function clrChat(){
   if(confirm('确定清空所有对话？')){
     chat.innerHTML = '';
     h = [];
     quickBtnsShown = false;
     add('对话已清空。བཀྲ་ཤིས་བདེ་ལེགས།', 'a');
   }
-});
-
-document.getElementById('sb').addEventListener('click', send);
-
-document.getElementById('t').addEventListener('keydown', e => {
-  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
-});
+}
 </script>
 </body>
 </html>`);
