@@ -77,7 +77,7 @@ Warm, scholarly, precise. Use Markdown. Never fabricate.`;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/index.html') {
-    const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+    const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');    
     res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
     res.end(html);
   } else if (req.url === '/api/chat' && req.method === 'POST') {
