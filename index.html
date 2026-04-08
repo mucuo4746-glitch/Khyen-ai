@@ -150,20 +150,35 @@ function handleFile(input){
   var file=input.files[0];
   if(!file) return;
   clearImage();
-  var isPDF=file.type==='application/pdf';
+
+  // 文件大小检查
+  var maxSize=2*1024*1024; // 2MB
+  if(file.size>maxSize){
+    showToast('文件过大（最大2MB），请压缩后重试');
+    input.value='';
+    return;
+  }
+
+  var isPDF=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
   var icon=isPDF?'📕':'📄';
   document.getElementById('file-icon').innerText=icon;
   document.getElementById('file-name').innerText=file.name+' ('+Math.round(file.size/1024)+'KB)';
   document.getElementById('file-preview').style.display='flex';
+
   var reader=new FileReader();
   if(isPDF){
     reader.onload=function(e){
-      currentFile={name:file.name,type:file.type,data:e.target.result.split(',')[1],isPDF:true};
+      currentFile={name:file.name,type:'application/pdf',data:e.target.result.split(',')[1],isPDF:true};
     };
     reader.readAsDataURL(file);
   } else {
+    // txt/word 等文本文件直接读文字
     reader.onload=function(e){
-      currentFile={name:file.name,type:file.type,text:e.target.result,isPDF:false};
+      var text=e.target.result;
+      if(text.length>50000){
+        text=text.substring(0,50000)+'...[文件过长，已截取前50000字符]';
+      }
+      currentFile={name:file.name,type:file.type,text:text,isPDF:false};
     };
     reader.readAsText(file,'utf-8');
   }
