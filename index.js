@@ -117,15 +117,23 @@ AIདབང་རྣོན། = 强人工智能
 ## STYLE
 Warm, scholarly, precise. Use Markdown. Never fabricate.`;
 
-const server = http.createServer((req, res) => {
+const MAX_BODY = 20 * 1024 * 1024; // 20MB server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/index.html') {
     const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
     res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
     res.end(html);
   } else if (req.url === '/api/chat' && req.method === 'POST') {
     let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', () => {
+let bodySize = 0;
+req.on('data', chunk => {
+  bodySize += chunk.length;
+  if(bodySize > 20 * 1024 * 1024) {
+    res.writeHead(413, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify({reply:'图片太大，请压缩后重试。'}));
+    return;
+  }
+  body += chunk;
+});    req.on('end', () => {
       try {
         const {messages} = JSON.parse(body);
         const postData = JSON.stringify({
