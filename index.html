@@ -80,6 +80,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   <div id="header">
     <div class="h-title">མཁྱེན། KHYEN AI</div>
     <div class="h-btns">
+      <button class="hbtn" id="lang-btn" onclick="switchLang()" title="切换语言">中</button>
       <button class="hbtn" onclick="saveChat()" title="保存对话">💾</button>
       <button class="hbtn" onclick="clearChat()" title="清空对话">🗑️</button>
       <button class="hbtn" onclick="goHome()" title="返回首页">🏠</button>
@@ -125,6 +126,79 @@ var h=[];
 var quickHidden=false;
 var currentImage=null;
 var currentFile=null;
+var currentLang='zh';
+
+var LANGS={
+  zh:{
+    btn:'中',
+    placeholder:'在此请教导师...',
+    send:'请教',
+    thinking:'智者正在斟酌...',
+    welcome:'བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 **KHYEN མཁྱེན།**。\n\n欢迎询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。也可以上传图片或文件。',
+    quick:[
+      {icon:'🔤',label:'藏文翻译',msg:'请翻译一段藏文给我看看，并解释其含义'},
+      {icon:'☸️',label:'佛法',msg:'介绍一个藏传佛教的核心概念'},
+      {icon:'🗓️',label:'藏历',msg:'今天是藏历什么日子？有什么特别意义吗？'},
+      {icon:'🏔️',label:'谚语',msg:'分享一句藏族谚语，并解释其深意'},
+      {icon:'🎀',label:'哈达',msg:'介绍藏族哈达的文化意义和使用礼仪'},
+      {icon:'🎉',label:'节日',msg:'藏族有哪些重要的传统节日？'}
+    ]
+  },
+  en:{
+    btn:'EN',
+    placeholder:'Ask your guide anything...',
+    send:'Ask',
+    thinking:'The sage is contemplating...',
+    welcome:'བཀྲ་ཤིས་བདེ་ལེགས། Tashi Delek!\n\nI am **KHYEN མཁྱེན།**, your guide to Tibetan culture, Buddhism and language.\n\nFeel free to ask about Tibetan Buddhism, culture, history, festivals, or request translations. You can also upload images or files.',
+    quick:[
+      {icon:'🔤',label:'Translate',msg:'Please show me a Tibetan text and explain its meaning'},
+      {icon:'☸️',label:'Buddhism',msg:'Introduce a core concept of Tibetan Buddhism'},
+      {icon:'🗓️',label:'Calendar',msg:'What is today in the Tibetan calendar? What is its significance?'},
+      {icon:'🏔️',label:'Proverb',msg:'Share a Tibetan proverb and explain its deeper meaning'},
+      {icon:'🎀',label:'Khata',msg:'Explain the cultural meaning and etiquette of the Tibetan khata'},
+      {icon:'🎉',label:'Festivals',msg:'What are the most important Tibetan festivals?'}
+    ]
+  },
+  es:{
+    btn:'ES',
+    placeholder:'Pregunta a tu guía...',
+    send:'Preguntar',
+    thinking:'El sabio está contemplando...',
+    welcome:'བཀྲ་ཤིས་བདེ་ལེགས། ¡Tashi Delek!\n\nSoy **KHYEN མཁྱེན།**, tu guía de la cultura, el budismo y la lengua tibetanos.\n\nPuedes preguntarme sobre el budismo tibetano, la cultura, la historia, los festivales o solicitar traducciones. También puedes subir imágenes o archivos.',
+    quick:[
+      {icon:'🔤',label:'Traducir',msg:'Muéstrame un texto tibetano y explica su significado'},
+      {icon:'☸️',label:'Budismo',msg:'Presenta un concepto central del budismo tibetano'},
+      {icon:'🗓️',label:'Calendario',msg:'¿Qué día es hoy en el calendario tibetano? ¿Qué significa?'},
+      {icon:'🏔️',label:'Proverbio',msg:'Comparte un proverbio tibetano y explica su significado profundo'},
+      {icon:'🎀',label:'Khata',msg:'Explica el significado cultural y la etiqueta del khata tibetano'},
+      {icon:'🎉',label:'Festivales',msg:'¿Cuáles son los festivales tibetanos más importantes?'}
+    ]
+  }
+};
+
+function switchLang(){
+  var order=['zh','en','es'];
+  var idx=order.indexOf(currentLang);
+  currentLang=order[(idx+1)%3];
+  applyLang();
+}
+
+function applyLang(){
+  var L=LANGS[currentLang];
+  document.getElementById('lang-btn').innerText=L.btn;
+  document.getElementById('t').placeholder=L.placeholder;
+  document.getElementById('sb').innerText=L.send;
+  // 更新快捷按钮
+  var qb=document.getElementById('quick-btns');
+  qb.innerHTML='';
+  L.quick.forEach(function(q){
+    var btn=document.createElement('button');
+    btn.className='qbtn';
+    btn.innerHTML=q.icon+' '+q.label;
+    btn.onclick=function(){quickSend(q.msg);};
+    qb.appendChild(btn);
+  });
+}
 
 function hasBo(t){return /[\u0F00-\u0FFF]/.test(t);}
 
@@ -207,8 +281,9 @@ function hideQuick(){
 function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
+  applyLang();
   if(h.length===0){
-    addMsg('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 **KHYEN མཁྱེན།**。\n\n欢迎询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。也可以上传图片或文件。','a');
+    addMsg(LANGS[currentLang].welcome,'a');
   }
 }
 
@@ -284,7 +359,7 @@ function send(){
   clearImage();
   clearFile();
   document.getElementById('sb').disabled=true;
-  var loader=addMsg('智者正在斟酌...','a');
+  var loader=addMsg(LANGS[currentLang].thinking,'a');
 
   fetch('/api/chat',{
     method:'POST',
