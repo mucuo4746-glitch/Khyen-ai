@@ -9,32 +9,33 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--red:#8e2323;--cream:#fdfbf7;--brown:#3d2b1f;--gold:#c9a84c}
 body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown);height:100vh;overflow:hidden}
-.prayer-bar{position:fixed;top:0;left:0;right:0;height:5px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0%,#c9a84c 20%,#8e2323 20%,#8e2323 40%,#1a5a8a 40%,#1a5a8a 60%,#1a6b3a 60%,#1a6b3a 80%,#6b1a8a 80%,#6b1a8a 100%)}
-#landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;overflow-y:auto;padding:60px 20px 40px}
-.l-icon{font-size:60px;margin-bottom:16px}
-.l-title{font-size:clamp(36px,7vw,60px);font-weight:300;letter-spacing:16px;color:#2a1a0a;padding-left:16px}
-.l-bo{font-family:'Noto Serif Tibetan',serif;font-size:clamp(16px,3vw,22px);color:var(--gold);letter-spacing:4px;margin:8px 0}
-.l-line{width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto}
-.l-tag{font-size:11px;color:#8a7a6a;letter-spacing:3px;text-transform:uppercase;margin-bottom:32px}
-.l-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:440px;margin-bottom:32px}
-@media(max-width:480px){.l-feats{grid-template-columns:repeat(2,1fr)}}
-.feat{background:white;border:1px solid rgba(201,168,76,0.25);border-radius:14px;padding:14px 8px;text-align:center}
-.feat-i{font-size:22px;margin-bottom:6px}
-.feat-t{font-size:12px;font-weight:600;color:#2a1a0a}
-.feat-b{font-family:'Noto Serif Tibetan',serif;font-size:11px;color:var(--gold);margin-top:3px}
-.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 40px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-bottom:20px;transition:all 0.3s}
+.prayer-bar{position:fixed;top:0;left:0;right:0;height:4px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0%,#c9a84c 20%,#8e2323 20%,#8e2323 40%,#1a5a8a 40%,#1a5a8a 60%,#1a6b3a 60%,#1a6b3a 80%,#6b1a8a 80%,#6b1a8a 100%)}
+
+/* 封面 */
+#landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:40px 20px}
+.l-icon{font-size:56px;margin-bottom:20px;opacity:0.9}
+.l-title{font-size:clamp(38px,8vw,64px);font-weight:300;letter-spacing:18px;color:#2a1a0a;padding-left:18px}
+.l-bo{font-family:'Noto Serif Tibetan',serif;font-size:clamp(16px,3vw,22px);color:var(--gold);letter-spacing:4px;margin:10px 0}
+.l-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:20px auto}
+.l-tag{font-size:11px;color:#8a7a6a;letter-spacing:3px;text-transform:uppercase;margin-bottom:48px}
+.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 48px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-bottom:24px;transition:all 0.3s}
 .l-btn:hover{background:var(--gold);color:white}
-.l-mantra{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:rgba(201,168,76,0.5);letter-spacing:3px}
+.l-mantra{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:rgba(201,168,76,0.45);letter-spacing:3px}
+
+/* 对话页 */
 #app{display:none;flex-direction:column;height:100vh}
-#header{background:var(--red);color:#f7f3e8;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.h-title{font-weight:bold;font-size:1em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
-.h-btns{display:flex;gap:6px}
-.hbtn{background:rgba(255,255,255,0.18);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+#header{background:var(--red);color:#f7f3e8;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.h-title{font-weight:bold;font-size:0.95em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
+.h-btns{display:flex;gap:4px}
+.hbtn{background:rgba(255,255,255,0.15);color:white;border:none;padding:6px 10px;border-radius:8px;font-size:15px;cursor:pointer;transition:background 0.2s}
+.hbtn:hover{background:rgba(255,255,255,0.28)}
+
 #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
 #quick-btns{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 8px}
 .qbtn{background:white;border:1px solid rgba(201,168,76,0.4);border-radius:20px;padding:8px 16px;font-size:12.5px;cursor:pointer;color:var(--brown);font-family:"Noto Serif SC",serif;transition:all 0.2s;white-space:nowrap}
 .qbtn:hover{background:var(--gold);color:white;border-color:var(--gold)}
-.m{max-width:88%;padding:16px 20px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+
+.m{max-width:88%;padding:14px 18px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
 .a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
 .a p,.a h1,.a h2,.a h3{margin:6px 0}
@@ -42,81 +43,82 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:17px}
 .acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed #eee}
 .abtn{background:none;border:1px solid #ddd;color:#888;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
-#input-area{padding:12px 16px 20px;background:white;border-top:1px solid #eee;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+
+#input-area{padding:10px 14px 18px;background:white;border-top:1px solid #eee;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
 .input-row{display:flex;gap:8px;align-items:flex-end}
-#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:"Noto Serif SC",serif;background:#fcfaf7}
-#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;height:44px}
-#img-btn{background:white;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:18px;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center}
-#img-btn:hover{border-color:var(--gold);background:#fffbf0}
-#file-btn{background:white;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:18px;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center}
-#file-btn:hover{border-color:var(--gold);background:#fffbf0}
 #img-preview{display:none;align-items:center;gap:8px;padding:6px 10px;background:#fffbf0;border:1px solid rgba(201,168,76,0.3);border-radius:10px}
-#img-preview img{width:48px;height:48px;object-fit:cover;border-radius:6px}
+#img-preview img{width:44px;height:44px;object-fit:cover;border-radius:6px}
 #file-preview{display:none;align-items:center;gap:8px;padding:6px 10px;background:#f0f5ff;border:1px solid rgba(100,140,220,0.3);border-radius:10px}
-.file-icon{font-size:22px}
-#img-clear,#file-clear{background:none;border:none;color:#999;cursor:pointer;font-size:16px;padding:2px 6px}
-#img-clear:hover,#file-clear:hover{color:var(--red)}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fo 2s forwards}
+.preview-clear{background:none;border:none;color:#aaa;cursor:pointer;font-size:15px;padding:2px 6px;margin-left:auto}
+.preview-clear:hover{color:var(--red)}
+#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:"Noto Serif SC",serif;background:#fcfaf7}
+.tool-btn{background:white;border:1px solid #ddd;border-radius:12px;padding:10px 13px;font-size:17px;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.tool-btn:hover{border-color:var(--gold);background:#fffbf0}
+#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;height:44px;transition:opacity 0.2s}
+#sb:disabled{opacity:0.5}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fo 2s forwards;pointer-events:none}
 @keyframes fo{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
 <div class="prayer-bar"></div>
+
+<!-- 封面：简洁版 -->
 <div id="landing">
   <div class="l-icon">🏔️</div>
   <div class="l-title">KHYEN</div>
   <div class="l-bo">མཁྱེན། AI</div>
   <div class="l-line"></div>
   <div class="l-tag">Intelligence Rooted in Tibetan Wisdom</div>
-  <div class="l-feats">
-    <div class="feat"><div class="feat-i">🔤</div><div class="feat-t">翻译</div><div class="feat-b">ཡིག་བསྒྱུར།</div></div>
-    <div class="feat"><div class="feat-i">📚</div><div class="feat-t">文化</div><div class="feat-b">རིག་གཞུང་།</div></div>
-    <div class="feat"><div class="feat-i">☸️</div><div class="feat-t">佛法</div><div class="feat-b">དམ་ཆོས།</div></div>
-    <div class="feat"><div class="feat-i">🗓️</div><div class="feat-t">节日</div><div class="feat-b">དུས་ཆེན།</div></div>
-  </div>
   <button class="l-btn" onclick="enterApp()">进入 · Enter</button>
   <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
 </div>
+
+<!-- 对话页 -->
 <div id="app">
   <div id="header">
     <div class="h-title">མཁྱེན། KHYEN AI</div>
     <div class="h-btns">
-      <button class="hbtn" onclick="saveChat()">💾 保存</button>
-      <button class="hbtn" onclick="clearChat()">🗑️ 清空</button>
-      <button class="hbtn" onclick="goHome()">🏠 首页</button>
+      <button class="hbtn" onclick="saveChat()" title="保存对话">💾</button>
+      <button class="hbtn" onclick="clearChat()" title="清空对话">🗑️</button>
+      <button class="hbtn" onclick="goHome()" title="返回首页">🏠</button>
     </div>
   </div>
+
   <div id="chat">
     <div id="quick-btns">
-      <button class="qbtn" onclick="quickSend('请翻译一段藏文给我看看，并解释其含义')">🔤 藏文翻译示例</button>
-      <button class="qbtn" onclick="quickSend('介绍一个藏传佛教的核心概念')">☸️ 佛法概念</button>
-      <button class="qbtn" onclick="quickSend('今天是藏历什么日子？有什么特别意义吗？')">🗓️ 藏历今日</button>
-      <button class="qbtn" onclick="quickSend('分享一句藏族谚语，并解释其深意')">🏔️ 藏族谚语</button>
-      <button class="qbtn" onclick="quickSend('介绍藏族哈达的文化意义和使用礼仪')">🎀 哈达礼仪</button>
-      <button class="qbtn" onclick="quickSend('藏族有哪些重要的传统节日？')">🎉 传统节日</button>
+      <button class="qbtn" onclick="quickSend('请翻译一段藏文给我看看，并解释其含义')">🔤 藏文翻译</button>
+      <button class="qbtn" onclick="quickSend('介绍一个藏传佛教的核心概念')">☸️ 佛法</button>
+      <button class="qbtn" onclick="quickSend('今天是藏历什么日子？有什么特别意义吗？')">🗓️ 藏历</button>
+      <button class="qbtn" onclick="quickSend('分享一句藏族谚语，并解释其深意')">🏔️ 谚语</button>
+      <button class="qbtn" onclick="quickSend('介绍藏族哈达的文化意义和使用礼仪')">🎀 哈达</button>
+      <button class="qbtn" onclick="quickSend('藏族有哪些重要的传统节日？')">🎉 节日</button>
     </div>
   </div>
+
   <div id="input-area">
     <div id="img-preview">
-      <img id="img-thumb" src="" alt="preview">
+      <img id="img-thumb" src="" alt="">
       <span style="font-size:12px;color:#888;flex:1">图片已选择</span>
-      <button id="img-clear" onclick="clearImage()">✕</button>
+      <button class="preview-clear" onclick="clearImage()">✕</button>
     </div>
     <div id="file-preview">
-      <span class="file-icon" id="file-icon">📄</span>
-      <span style="font-size:12px;color:#666;flex:1" id="file-name">文件已选择</span>
-      <button id="file-clear" onclick="clearFile()">✕</button>
+      <span id="file-icon">📄</span>
+      <span style="font-size:12px;color:#666;flex:1" id="file-name"></span>
+      <button class="preview-clear" onclick="clearFile()">✕</button>
     </div>
     <div class="input-row">
-      <button id="img-btn" onclick="document.getElementById('img-input').click()" title="上传图片">🖼️</button>
+      <button class="tool-btn" onclick="document.getElementById('img-input').click()" title="上传图片">🖼️</button>
       <input type="file" id="img-input" accept="image/*" style="display:none" onchange="handleImage(this)">
-      <button id="file-btn" onclick="document.getElementById('file-input').click()" title="上传文件">📎</button>
+      <button class="tool-btn" onclick="document.getElementById('file-input').click()" title="上传文件">📎</button>
       <input type="file" id="file-input" accept=".pdf,.txt,.text,application/pdf,text/plain,text/*" style="display:none" onchange="handleFile(this)">
-      <textarea id="t" placeholder="在此请教导师... Ask anything about Tibetan culture..."></textarea>
+      <textarea id="t" placeholder="在此请教导师..."></textarea>
       <button id="sb" onclick="send()">请教</button>
     </div>
   </div>
 </div>
+
 <script>
 var chat=document.getElementById('chat');
 var h=[];
@@ -150,34 +152,19 @@ function handleFile(input){
   var file=input.files[0];
   if(!file) return;
   clearImage();
-
-  // 文件大小检查
-  var maxSize=2*1024*1024; // 2MB
-  if(file.size>maxSize){
-    showToast('文件过大（最大2MB），请压缩后重试');
-    input.value='';
-    return;
-  }
-
+  if(file.size>2*1024*1024){showToast('文件过大（最大2MB）');input.value='';return;}
   var isPDF=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
-  var icon=isPDF?'📕':'📄';
-  document.getElementById('file-icon').innerText=icon;
+  document.getElementById('file-icon').innerText=isPDF?'📕':'📄';
   document.getElementById('file-name').innerText=file.name+' ('+Math.round(file.size/1024)+'KB)';
   document.getElementById('file-preview').style.display='flex';
-
   var reader=new FileReader();
   if(isPDF){
-    reader.onload=function(e){
-      currentFile={name:file.name,type:'application/pdf',data:e.target.result.split(',')[1],isPDF:true};
-    };
+    reader.onload=function(e){currentFile={name:file.name,type:'application/pdf',data:e.target.result.split(',')[1],isPDF:true};};
     reader.readAsDataURL(file);
   } else {
-    // txt/word 等文本文件直接读文字
     reader.onload=function(e){
       var text=e.target.result;
-      if(text.length>50000){
-        text=text.substring(0,50000)+'...[文件过长，已截取前50000字符]';
-      }
+      if(text.length>50000) text=text.substring(0,50000)+'...[已截取]';
       currentFile={name:file.name,type:file.type,text:text,isPDF:false};
     };
     reader.readAsText(file,'utf-8');
@@ -221,7 +208,7 @@ function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
   if(h.length===0){
-    addMsg('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 KHYEN མཁྱེན།。\n\n欢迎向我询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。','a');
+    addMsg('བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 **KHYEN མཁྱེན།**。\n\n欢迎询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。也可以上传图片或文件。','a');
   }
 }
 
@@ -254,10 +241,9 @@ function addMsg(msg,type){
 function send(){
   var input=document.getElementById('t');
   var v=input.value.trim();
-  if(!v && !currentImage && !currentFile) return;
+  if(!v&&!currentImage&&!currentFile) return;
   hideQuick();
 
-  // 显示用户消息
   var userDiv=document.createElement('div');
   userDiv.className='m u';
   if(currentImage){
@@ -267,30 +253,28 @@ function send(){
     userDiv.appendChild(imgEl);
   }
   if(currentFile){
-    var fileTag=document.createElement('div');
-    fileTag.style.cssText='font-size:12px;color:#666;padding:4px 8px;background:#f0f5ff;border-radius:6px;margin-bottom:6px;display:inline-block';
-    fileTag.innerText=(currentFile.isPDF?'📕 ':'📄 ')+currentFile.name;
-    userDiv.appendChild(fileTag);
+    var ftag=document.createElement('div');
+    ftag.style.cssText='font-size:12px;color:#666;margin-bottom:4px';
+    ftag.innerText=(currentFile.isPDF?'📕 ':'📄 ')+currentFile.name;
+    userDiv.appendChild(ftag);
   }
-  if(v){ var txt=document.createElement('div'); txt.innerText=v; userDiv.appendChild(txt); }
+  if(v){var txt=document.createElement('div');txt.innerText=v;userDiv.appendChild(txt);}
   chat.appendChild(userDiv);
   chat.scrollTop=chat.scrollHeight;
 
-  // 构建消息内容
   var userContent;
   if(currentImage){
     userContent=[
       {type:'image',source:{type:'base64',media_type:currentImage.type,data:currentImage.data}},
       {type:'text',text:v||'请描述这张图片，结合藏文化知识解释其含义。'}
     ];
-  } else if(currentFile && currentFile.isPDF){
+  } else if(currentFile&&currentFile.isPDF){
     userContent=[
       {type:'document',source:{type:'base64',media_type:'application/pdf',data:currentFile.data}},
-      {type:'text',text:v||'请阅读这份文件并总结其主要内容，结合藏文化背景解释。'}
+      {type:'text',text:v||'请总结这份文件的主要内容，结合藏文化背景解释。'}
     ];
-  } else if(currentFile && !currentFile.isPDF){
-    var filePrompt='以下是文件《'+currentFile.name+'》的内容：\n\n'+currentFile.text+'\n\n'+(v||'请总结这份文件的主要内容，结合藏文化背景解释。');
-    userContent=filePrompt;
+  } else if(currentFile&&!currentFile.isPDF){
+    userContent='以下是文件《'+currentFile.name+'》的内容：\n\n'+currentFile.text+'\n\n'+(v||'请总结主要内容，结合藏文化背景解释。');
   } else {
     userContent=v;
   }
@@ -301,6 +285,7 @@ function send(){
   clearFile();
   document.getElementById('sb').disabled=true;
   var loader=addMsg('智者正在斟酌...','a');
+
   fetch('/api/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -334,7 +319,7 @@ function quickSend(msg){
 function saveChat(){
   var msgs=Array.from(document.querySelectorAll('.m')).map(function(m){
     var cl=m.cloneNode(true);
-    var a=cl.querySelector('.acts');if(a) a.remove();
+    var a=cl.querySelector('.acts');if(a)a.remove();
     return cl.innerText.trim();
   }).join('\n\n---\n\n');
   var blob=new Blob([msgs],{type:'text/plain;charset=utf-8'});
