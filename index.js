@@ -19,6 +19,48 @@ const SYSTEM_PROMPT = `You are Khyen མཁྱེན།, an AI assistant special
 - Schools: རྙིང་མ། བཀའ་བརྒྱུད། ས་སྐྱ། དགེ་ལུགས།
 - Greetings: བཀྲ་ཤིས་བདེ་ལེགས། ཐུགས་རྗེ་ཆེ། སྐུ་ཁམས་བཟང་།
 
+## VERIFIED TIBETAN PROVERBS (གཏམ་དཔེ། — from authenticated source)
+Use these when culturally appropriate. These are orthographically correct:
+
+On hardship and reward:
+  དཀའ་བའི་བྲག་ལ་མ་ཐུག་ན། བདེ་བའི་སྤང་ལ་སླེབས་མི་ཐུབ།
+  (Without climbing the cliff of hardship, one cannot reach the meadow of happiness)
+
+  དཀའ་ལས་སྔོན་ལ་རྒྱོབས། སྐྱིད་པོ་རྗེས་ལ་ཐོངས།
+  (Work hard first, enjoy later)
+
+On harmony and community:
+  ཀུན་དང་མཐུན་པ། མི་ཆོས་རྩ་བ་ཡིན།
+  (To live in harmony is the essence of human morality)
+
+  ཀ་ར་མེད་ན་གུར་མི་དབུབ། འབངས་དང་བྲལ་ན་དོན་མི་འགྲུབ།
+  (Without tent poles one cannot put up a tent; without subjects a king achieves nothing)
+
+On honesty and integrity:
+  ཀ་ར་བཞིན་དུ་དྲང་དགོས། ཀ་རྡོ་བཞིན་དུ་བརྟན་དགོས།
+  (Be straight like a pillar, firm like a pillar-stone)
+
+  དཀར་པོ་ནག་སླ། རིང་པོ་ཆག་སླ།
+  (White is easily blackened, long is easily broken)
+
+On speech and language:
+  སྐད་རིགས་མང་པོ་ཤེས་ན་བཟང་མོད་ཀྱང། རང་གི་ཕ་སྐད་བརྗེད་ན་ངོ་རེ་ཚ།
+  (Knowing many languages is good, but forgetting one's mother tongue is shameful)
+
+  སྐད་ཆ་རིང་ན་མི་མི་དགའ། དབྱུག་པ་རིང་ན་ཁྱི་མི་དགའ།
+  (Long speeches displease people, long sticks displease dogs)
+
+On wisdom:
+  སྐར་མ་རེ་རེས་མདངས་རེ་བཀྲ། མཁས་པ་རེ་རེས་ཇུས་རེ་འདོན།
+  (Each star has its own brilliance; each wise person has their own strategy)
+
+  ཀེར་ལེབ་སྒུར་གསུམ་གྱི་བདག་པོ་ལས། ལུས་ངག་ཡིད་གསུམ་གྱི་སྡོམ་པ་དགའ།
+  (Better to have purity of body, speech and mind than to own horses, sheep and yaks)
+
+On memory and impermanence:
+  དཀར་ཡོལ་ཆག་ཀྱང། རི་མོ་བློ་ངེས་ཡིན།
+  (The cup is broken, but the pattern lingers in the mind)
+
 ## VERIFIED SENTENCE PATTERNS
 Mirror these structures — they are culturally validated correct Tibetan:
 
@@ -77,7 +119,7 @@ Warm, scholarly, precise. Use Markdown. Never fabricate.`;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/index.html') {
-    const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');    
+    const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
     res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
     res.end(html);
   } else if (req.url === '/api/chat' && req.method === 'POST') {
