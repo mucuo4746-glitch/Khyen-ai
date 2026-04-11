@@ -207,9 +207,25 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const {messages} = JSON.parse(body);
+
+        // 智能模型选择：简单查询用Haiku（便宜5倍），复杂查询用Sonnet
+        const lastMsg = messages[messages.length - 1];
+        const lastContent = typeof lastMsg.content === 'string'
+          ? lastMsg.content
+          : (lastMsg.content[lastMsg.content.length-1]?.text || '');
+        const isComplex = lastMsg.content !== null &&
+          typeof lastMsg.content !== 'string' || // 有图片或文件
+          lastContent.length > 200 ||            // 长问题
+          /翻译|translate|རྒྱུར|经文|སྔགས|哲学|བཀའ|分析|解释/.test(lastContent) ||
+          messages.length > 6;                   // 长对话
+
+        const model = isComplex
+          ? 'claude-sonnet-4-20250514'
+          : 'claude-haiku-4-5-20251001';
+
         const postData = JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
+          model: model,
+          max_tokens: 2048,
           system: SYSTEM_PROMPT,
           messages: messages
         });
