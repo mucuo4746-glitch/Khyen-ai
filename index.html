@@ -4,75 +4,300 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KHYEN AI མཁྱེན།</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Serif+Tibetan:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Noto+Serif+Tibetan:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#8e2323;--cream:#fdfbf7;--brown:#3d2b1f;--gold:#c9a84c}
+:root{
+  --gold:#c9a84c;
+  --gold-light:#e8c97a;
+  --brown:#2a1a0a;
+  --cream:#faf6ef;
+  --red:#8e2323;
+  --warm:#f5ede0;
+}
 body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown);height:100vh;overflow:hidden}
-.prayer-bar{position:fixed;top:0;left:0;right:0;height:4px;z-index:999;background:repeating-linear-gradient(90deg,#c9a84c 0%,#c9a84c 20%,#8e2323 20%,#8e2323 40%,#1a5a8a 40%,#1a5a8a 60%,#1a6b3a 60%,#1a6b3a 80%,#6b1a8a 80%,#6b1a8a 100%)}
 
-/* 封面 */
-#landing{position:fixed;inset:0;background:linear-gradient(180deg,#fff8ee,#faf7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:40px 20px}
-.l-icon{font-size:56px;margin-bottom:20px;opacity:0.9}
-.l-title{font-size:clamp(38px,8vw,64px);font-weight:300;letter-spacing:18px;color:#2a1a0a;padding-left:18px}
-.l-bo{font-family:'Noto Serif Tibetan',serif;font-size:clamp(16px,3vw,22px);color:var(--gold);letter-spacing:4px;margin:10px 0}
-.l-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:20px auto}
-.l-tag{font-size:11px;color:#8a7a6a;letter-spacing:3px;text-transform:uppercase;margin-bottom:48px}
-.l-btn{background:#2a1a0a;color:var(--gold);border:none;padding:14px 48px;font-size:14px;letter-spacing:4px;cursor:pointer;border-radius:30px;margin-bottom:24px;transition:all 0.3s}
-.l-btn:hover{background:var(--gold);color:white}
-.l-mantra{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:rgba(201,168,76,0.45);letter-spacing:3px}
+/* 经幡色条 */
+.prayer-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:999;
+  background:repeating-linear-gradient(90deg,
+    #c9a84c 0%,#c9a84c 20%,
+    #8e2323 20%,#8e2323 40%,
+    #1a5a8a 40%,#1a5a8a 60%,
+    #1a6b3a 60%,#1a6b3a 80%,
+    #6b1a8a 80%,#6b1a8a 100%)}
 
-/* 对话页 */
-#app{display:none;flex-direction:column;height:100vh}
-#header{background:var(--red);color:#f7f3e8;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.h-title{font-weight:bold;font-size:0.95em;font-family:'Noto Serif Tibetan',serif;line-height:1.8}
+/* ===== 封面 ===== */
+#landing{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:100;overflow:hidden;
+  background:linear-gradient(160deg, #1a0e05 0%, #2d1a0a 40%, #1a0e05 100%);
+}
+
+/* 大字藏文背景纹理 */
+.tibetan-bg{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;pointer-events:none;
+  opacity:0.07;
+  font-family:'Noto Serif Tibetan',serif;
+  font-size:clamp(80px,15vw,160px);
+  color:#c9a84c;
+  line-height:1.2;
+  letter-spacing:-4px;
+  text-align:center;
+  padding:20px;
+  word-break:break-all;
+  animation:slow-drift 20s ease-in-out infinite alternate;
+}
+@keyframes slow-drift{
+  0%{transform:scale(1) translateY(0)}
+  100%{transform:scale(1.04) translateY(-12px)}
+}
+
+/* 金色光晕 */
+.glow{
+  position:absolute;
+  width:500px;height:500px;
+  background:radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  animation:pulse-glow 4s ease-in-out infinite alternate;
+}
+@keyframes pulse-glow{
+  0%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}
+}
+
+/* 封面内容 */
+.landing-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;
+  animation:fade-up 1.2s ease forwards;
+}
+@keyframes fade-up{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.l-top-line{
+  width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin-bottom:28px;
+}
+
+.l-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(52px,10vw,88px);
+  font-weight:300;
+  letter-spacing:24px;
+  color:#f5ede0;
+  padding-left:24px;
+  line-height:1;
+}
+
+.l-bo{
+  font-family:'Noto Serif Tibetan',serif;
+  font-size:clamp(18px,3.5vw,26px);
+  color:var(--gold);
+  letter-spacing:6px;
+  margin:14px 0 6px;
+  opacity:0.9;
+}
+
+.l-subtitle{
+  font-size:10px;
+  color:rgba(245,237,224,0.4);
+  letter-spacing:5px;
+  text-transform:uppercase;
+  margin-bottom:44px;
+}
+
+.l-divider{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:44px;
+}
+.l-divider-line{width:40px;height:1px;background:rgba(201,168,76,0.3)}
+.l-divider-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--gold);opacity:0.6;
+}
+
+.l-btn{
+  background:transparent;
+  color:var(--gold);
+  border:1px solid rgba(201,168,76,0.5);
+  padding:13px 52px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:16px;
+  letter-spacing:6px;
+  cursor:pointer;
+  border-radius:2px;
+  margin-bottom:36px;
+  transition:all 0.4s;
+  position:relative;
+  overflow:hidden;
+}
+.l-btn::before{
+  content:'';
+  position:absolute;inset:0;
+  background:var(--gold);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform 0.4s ease;
+  z-index:-1;
+}
+.l-btn:hover{color:var(--brown);border-color:var(--gold)}
+.l-btn:hover::before{transform:scaleX(1)}
+
+.l-mantra{
+  font-family:'Noto Serif Tibetan',serif;
+  font-size:13px;
+  color:rgba(201,168,76,0.3);
+  letter-spacing:4px;
+}
+
+/* ===== 对话页 ===== */
+#app{display:none;flex-direction:column;height:100vh;background:var(--cream)}
+
+#header{
+  background:var(--brown);
+  color:#f5ede0;
+  padding:11px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  border-bottom:1px solid rgba(201,168,76,0.2);
+}
+.h-title{
+  font-family:'Noto Serif Tibetan',serif;
+  font-weight:400;font-size:0.9em;
+  line-height:1.8;
+  color:var(--gold-light);
+  letter-spacing:1px;
+}
 .h-btns{display:flex;gap:4px}
-.hbtn{background:rgba(255,255,255,0.15);color:white;border:none;padding:6px 10px;border-radius:8px;font-size:15px;cursor:pointer;transition:background 0.2s}
-.hbtn:hover{background:rgba(255,255,255,0.28)}
+.hbtn{
+  background:rgba(201,168,76,0.1);
+  color:rgba(245,237,224,0.7);
+  border:none;padding:6px 10px;
+  border-radius:6px;font-size:15px;
+  cursor:pointer;transition:all 0.2s;
+}
+.hbtn:hover{background:rgba(201,168,76,0.25);color:#f5ede0}
 
-#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
-#quick-btns{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 8px}
-.qbtn{background:white;border:1px solid rgba(201,168,76,0.4);border-radius:20px;padding:8px 16px;font-size:12.5px;cursor:pointer;color:var(--brown);font-family:"Noto Serif SC",serif;transition:all 0.2s;white-space:nowrap}
-.qbtn:hover{background:var(--gold);color:white;border-color:var(--gold)}
+#chat{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
 
-.m{max-width:88%;padding:14px 18px;border-radius:16px;line-height:1.8;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-.u{align-self:flex-end;background:#e6d5b8;border-bottom-right-radius:4px}
-.a{align-self:flex-start;background:white;border:1px solid #eee;border-bottom-left-radius:4px}
+#quick-btns{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 10px}
+.qbtn{
+  background:white;
+  border:1px solid rgba(201,168,76,0.35);
+  border-radius:20px;
+  padding:7px 16px;font-size:12px;
+  cursor:pointer;color:var(--brown);
+  font-family:"Noto Serif SC",serif;
+  transition:all 0.25s;white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.qbtn:hover{background:var(--gold);color:white;border-color:var(--gold);box-shadow:0 2px 8px rgba(201,168,76,0.3)}
+
+.m{max-width:88%;padding:14px 18px;border-radius:16px;line-height:1.85;overflow-wrap:break-word}
+.u{align-self:flex-end;background:var(--brown);color:#f5ede0;border-bottom-right-radius:4px}
+.a{
+  align-self:flex-start;background:white;
+  border:1px solid rgba(201,168,76,0.15);
+  border-bottom-left-radius:4px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
 .a p,.a h1,.a h2,.a h3{margin:6px 0}
 .a ul{margin:6px 0;padding-left:20px}
-.bo{font-family:'Noto Serif Tibetan',serif;line-height:2.5;font-size:17px}
-.acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed #eee}
-.abtn{background:none;border:1px solid #ddd;color:#888;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.bo{font-family:'Noto Serif Tibetan',serif;line-height:2.6;font-size:17px}
+.acts{display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(201,168,76,0.15)}
+.abtn{
+  background:none;border:1px solid rgba(201,168,76,0.3);
+  color:#999;padding:4px 10px;
+  border-radius:6px;font-size:11px;cursor:pointer;
+  transition:all 0.2s;
+}
+.abtn:hover{border-color:var(--gold);color:var(--brown)}
 
-#input-area{padding:10px 14px 18px;background:white;border-top:1px solid #eee;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+#input-area{
+  padding:10px 14px 18px;
+  background:white;
+  border-top:1px solid rgba(201,168,76,0.15);
+  display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+}
 .input-row{display:flex;gap:8px;align-items:flex-end}
 #img-preview{display:none;align-items:center;gap:8px;padding:6px 10px;background:#fffbf0;border:1px solid rgba(201,168,76,0.3);border-radius:10px}
 #img-preview img{width:44px;height:44px;object-fit:cover;border-radius:6px}
 #file-preview{display:none;align-items:center;gap:8px;padding:6px 10px;background:#f0f5ff;border:1px solid rgba(100,140,220,0.3);border-radius:10px}
 .preview-clear{background:none;border:none;color:#aaa;cursor:pointer;font-size:15px;padding:2px 6px;margin-left:auto}
 .preview-clear:hover{color:var(--red)}
-#t{flex:1;min-height:44px;max-height:120px;border:1px solid #ddd;border-radius:12px;padding:10px 14px;font-size:15px;outline:none;resize:none;font-family:"Noto Serif SC",serif;background:#fcfaf7}
-.tool-btn{background:white;border:1px solid #ddd;border-radius:12px;padding:10px 13px;font-size:17px;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+#t{
+  flex:1;min-height:44px;max-height:120px;
+  border:1px solid rgba(201,168,76,0.25);
+  border-radius:12px;padding:10px 14px;
+  font-size:15px;outline:none;resize:none;
+  font-family:"Noto Serif SC",serif;
+  background:#fdfaf5;color:var(--brown);
+  transition:border-color 0.2s;
+}
+#t:focus{border-color:rgba(201,168,76,0.6)}
+.tool-btn{
+  background:white;border:1px solid rgba(201,168,76,0.25);
+  border-radius:12px;padding:10px 13px;
+  font-size:17px;cursor:pointer;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
 .tool-btn:hover{border-color:var(--gold);background:#fffbf0}
-#sb{background:var(--red);color:white;border:none;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;height:44px;transition:opacity 0.2s}
-#sb:disabled{opacity:0.5}
+#sb{
+  background:var(--brown);color:var(--gold-light);
+  border:none;padding:10px 20px;
+  border-radius:12px;font-size:14px;
+  font-family:"Noto Serif SC",serif;
+  font-weight:bold;cursor:pointer;
+  white-space:nowrap;height:44px;
+  transition:all 0.2s;letter-spacing:1px;
+}
+#sb:hover{background:#3d2b1f}
+#sb:disabled{opacity:0.4}
 
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fo 2s forwards;pointer-events:none}
+.toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%);
+  background:rgba(42,26,10,0.88);
+  color:#f5ede0;padding:8px 22px;
+  border-radius:20px;font-size:13px;
+  z-index:999;animation:fo 2.2s forwards;
+  pointer-events:none;
+  border:1px solid rgba(201,168,76,0.3);
+}
 @keyframes fo{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
 <div class="prayer-bar"></div>
 
-<!-- 封面：简洁版 -->
+<!-- 封面 -->
 <div id="landing">
-  <div class="l-icon">🏔️</div>
-  <div class="l-title">KHYEN</div>
-  <div class="l-bo">མཁྱེན། AI</div>
-  <div class="l-line"></div>
-  <div class="l-tag">Intelligence Rooted in Tibetan Wisdom</div>
-  <button class="l-btn" onclick="enterApp()">进入 · Enter</button>
-  <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
+  <div class="tibetan-bg">མཁྱེན་པའི་གཏེར་གྱི་ཞབས་ལ་འདུད་བོད་ཀྱི་རིག་གཞུང་མཁྱེན་པའི་གཏེར་གྱི་ཞབས་ལ་འདུད་བོད་ཀྱི་རིག་གཞུང་མཁྱེན་པའི་གཏེར་</div>
+  <div class="glow"></div>
+  <div class="landing-content">
+    <div class="l-top-line"></div>
+    <div class="l-title">KHYEN</div>
+    <div class="l-bo">མཁྱེན། AI</div>
+    <div class="l-subtitle">Intelligence Rooted in Tibetan Wisdom</div>
+    <div class="l-divider">
+      <div class="l-divider-line"></div>
+      <div class="l-divider-dot"></div>
+      <div class="l-divider-line"></div>
+    </div>
+    <button class="l-btn" onclick="enterApp()">进入 &nbsp;·&nbsp; Enter</button>
+    <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
+  </div>
 </div>
 
 <!-- 对话页 -->
@@ -88,14 +313,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   </div>
 
   <div id="chat">
-    <div id="quick-btns">
-      <button class="qbtn" onclick="quickSend('请翻译一段藏文给我看看，并解释其含义')">🔤 藏文翻译</button>
-      <button class="qbtn" onclick="quickSend('介绍一个藏传佛教的核心概念')">☸️ 佛法</button>
-      <button class="qbtn" onclick="quickSend('今天是藏历什么日子？有什么特别意义吗？')">🗓️ 藏历</button>
-      <button class="qbtn" onclick="quickSend('分享一句藏族谚语，并解释其深意')">🏔️ 谚语</button>
-      <button class="qbtn" onclick="quickSend('介绍藏族哈达的文化意义和使用礼仪')">🎀 哈达</button>
-      <button class="qbtn" onclick="quickSend('藏族有哪些重要的传统节日？')">🎉 节日</button>
-    </div>
+    <div id="quick-btns"></div>
   </div>
 
   <div id="input-area">
@@ -129,11 +347,7 @@ var currentFile=null;
 var currentLang='zh';
 
 var LANGS={
-  zh:{
-    btn:'中',
-    placeholder:'在此请教导师...',
-    send:'请教',
-    thinking:'智者正在斟酌...',
+  zh:{btn:'中',placeholder:'在此请教导师...',send:'请教',thinking:'智者正在斟酌...',
     welcome:'བཀྲ་ཤིས་བདེ་ལེགས། 扎西德勒！\n\n我是您的藏文化智慧向导 **KHYEN མཁྱེན།**。\n\n欢迎询问藏传佛教、藏族文化、历史、节日，或进行藏汉英翻译。也可以上传图片或文件。',
     quick:[
       {icon:'🔤',label:'藏文翻译',msg:'请翻译一段藏文给我看看，并解释其含义'},
@@ -142,13 +356,8 @@ var LANGS={
       {icon:'🏔️',label:'谚语',msg:'分享一句藏族谚语，并解释其深意'},
       {icon:'🎀',label:'哈达',msg:'介绍藏族哈达的文化意义和使用礼仪'},
       {icon:'🎉',label:'节日',msg:'藏族有哪些重要的传统节日？'}
-    ]
-  },
-  en:{
-    btn:'EN',
-    placeholder:'Ask your guide anything...',
-    send:'Ask',
-    thinking:'The sage is contemplating...',
+    ]},
+  en:{btn:'EN',placeholder:'Ask your guide anything...',send:'Ask',thinking:'The sage is contemplating...',
     welcome:'བཀྲ་ཤིས་བདེ་ལེགས། Tashi Delek!\n\nI am **KHYEN མཁྱེན།**, your guide to Tibetan culture, Buddhism and language.\n\nFeel free to ask about Tibetan Buddhism, culture, history, festivals, or request translations. You can also upload images or files.',
     quick:[
       {icon:'🔤',label:'Translate',msg:'Please show me a Tibetan text and explain its meaning'},
@@ -157,13 +366,8 @@ var LANGS={
       {icon:'🏔️',label:'Proverb',msg:'Share a Tibetan proverb and explain its deeper meaning'},
       {icon:'🎀',label:'Khata',msg:'Explain the cultural meaning and etiquette of the Tibetan khata'},
       {icon:'🎉',label:'Festivals',msg:'What are the most important Tibetan festivals?'}
-    ]
-  },
-  es:{
-    btn:'ES',
-    placeholder:'Pregunta a tu guía...',
-    send:'Preguntar',
-    thinking:'El sabio está contemplando...',
+    ]},
+  es:{btn:'ES',placeholder:'Pregunta a tu guía...',send:'Preguntar',thinking:'El sabio está contemplando...',
     welcome:'བཀྲ་ཤིས་བདེ་ལེགས། ¡Tashi Delek!\n\nSoy **KHYEN མཁྱེན།**, tu guía de la cultura, el budismo y la lengua tibetanos.\n\nPuedes preguntarme sobre el budismo tibetano, la cultura, la historia, los festivales o solicitar traducciones. También puedes subir imágenes o archivos.',
     quick:[
       {icon:'🔤',label:'Traducir',msg:'Muéstrame un texto tibetano y explica su significado'},
@@ -172,14 +376,12 @@ var LANGS={
       {icon:'🏔️',label:'Proverbio',msg:'Comparte un proverbio tibetano y explica su significado profundo'},
       {icon:'🎀',label:'Khata',msg:'Explica el significado cultural y la etiqueta del khata tibetano'},
       {icon:'🎉',label:'Festivales',msg:'¿Cuáles son los festivales tibetanos más importantes?'}
-    ]
-  }
+    ]}
 };
 
 function switchLang(){
   var order=['zh','en','es'];
-  var idx=order.indexOf(currentLang);
-  currentLang=order[(idx+1)%3];
+  currentLang=order[(order.indexOf(currentLang)+1)%3];
   applyLang();
 }
 
@@ -188,7 +390,6 @@ function applyLang(){
   document.getElementById('lang-btn').innerText=L.btn;
   document.getElementById('t').placeholder=L.placeholder;
   document.getElementById('sb').innerText=L.send;
-  // 更新快捷按钮
   var qb=document.getElementById('quick-btns');
   qb.innerHTML='';
   L.quick.forEach(function(q){
@@ -203,8 +404,7 @@ function applyLang(){
 function hasBo(t){return /[\u0F00-\u0FFF]/.test(t);}
 
 function handleImage(input){
-  var file=input.files[0];
-  if(!file) return;
+  var file=input.files[0];if(!file)return;
   clearFile();
   var reader=new FileReader();
   reader.onload=function(e){
@@ -223,8 +423,7 @@ function clearImage(){
 }
 
 function handleFile(input){
-  var file=input.files[0];
-  if(!file) return;
+  var file=input.files[0];if(!file)return;
   clearImage();
   if(file.size>2*1024*1024){showToast('文件过大（最大2MB）');input.value='';return;}
   var isPDF=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
@@ -238,7 +437,7 @@ function handleFile(input){
   } else {
     reader.onload=function(e){
       var text=e.target.result;
-      if(text.length>50000) text=text.substring(0,50000)+'...[已截取]';
+      if(text.length>50000)text=text.substring(0,50000)+'...[已截取]';
       currentFile={name:file.name,type:file.type,text:text,isPDF:false};
     };
     reader.readAsText(file,'utf-8');
@@ -252,7 +451,7 @@ function clearFile(){
 }
 
 function md(t){
-  if(!t) return '';
+  if(!t)return '';
   t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   t=t.replace(/\*([^*]+)\*/g,'<em>$1</em>');
   t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
@@ -282,9 +481,7 @@ function enterApp(){
   document.getElementById('landing').style.display='none';
   document.getElementById('app').style.display='flex';
   applyLang();
-  if(h.length===0){
-    addMsg(LANGS[currentLang].welcome,'a');
-  }
+  if(h.length===0){addMsg(LANGS[currentLang].welcome,'a');}
 }
 
 function goHome(){
@@ -297,17 +494,14 @@ function addMsg(msg,type){
   d.className='m '+type;
   if(type==='a'){
     d.innerHTML=md(msg);
-    if(hasBo(msg)) d.classList.add('bo');
+    if(hasBo(msg))d.classList.add('bo');
     var acts=document.createElement('div');
     acts.className='acts';
     var cb=document.createElement('button');
     cb.className='abtn';cb.innerText='📋 复制';
     (function(m){cb.onclick=function(){navigator.clipboard.writeText(m).then(function(){showToast('已复制 ✓');});};})(msg);
-    acts.appendChild(cb);
-    d.appendChild(acts);
-  } else {
-    d.innerText=msg;
-  }
+    acts.appendChild(cb);d.appendChild(acts);
+  } else {d.innerText=msg;}
   chat.appendChild(d);
   chat.scrollTop=chat.scrollHeight;
   return d;
@@ -316,9 +510,8 @@ function addMsg(msg,type){
 function send(){
   var input=document.getElementById('t');
   var v=input.value.trim();
-  if(!v&&!currentImage&&!currentFile) return;
+  if(!v&&!currentImage&&!currentFile)return;
   hideQuick();
-
   var userDiv=document.createElement('div');
   userDiv.className='m u';
   if(currentImage){
@@ -329,14 +522,13 @@ function send(){
   }
   if(currentFile){
     var ftag=document.createElement('div');
-    ftag.style.cssText='font-size:12px;color:#666;margin-bottom:4px';
+    ftag.style.cssText='font-size:12px;color:rgba(245,237,224,0.7);margin-bottom:4px';
     ftag.innerText=(currentFile.isPDF?'📕 ':'📄 ')+currentFile.name;
     userDiv.appendChild(ftag);
   }
   if(v){var txt=document.createElement('div');txt.innerText=v;userDiv.appendChild(txt);}
   chat.appendChild(userDiv);
   chat.scrollTop=chat.scrollHeight;
-
   var userContent;
   if(currentImage){
     userContent=[
@@ -350,33 +542,22 @@ function send(){
     ];
   } else if(currentFile&&!currentFile.isPDF){
     userContent='以下是文件《'+currentFile.name+'》的内容：\n\n'+currentFile.text+'\n\n'+(v||'请总结主要内容，结合藏文化背景解释。');
-  } else {
-    userContent=v;
-  }
-
+  } else {userContent=v;}
   h.push({role:'user',content:userContent});
-  input.value='';
-  clearImage();
-  clearFile();
+  input.value='';clearImage();clearFile();
   document.getElementById('sb').disabled=true;
   var loader=addMsg(LANGS[currentLang].thinking,'a');
-
-  fetch('/api/chat',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:h})
-  }).then(function(r){return r.json();}).then(function(data){
+  fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:h})})
+  .then(function(r){return r.json();})
+  .then(function(data){
     loader.innerHTML=md(data.reply);
-    if(hasBo(data.reply)) loader.classList.add('bo');
-    var acts=document.createElement('div');
-    acts.className='acts';
-    var cb=document.createElement('button');
-    cb.className='abtn';cb.innerText='📋 复制';
+    if(hasBo(data.reply))loader.classList.add('bo');
+    var acts=document.createElement('div');acts.className='acts';
+    var cb=document.createElement('button');cb.className='abtn';cb.innerText='📋 复制';
     (function(m){cb.onclick=function(){navigator.clipboard.writeText(m).then(function(){showToast('已复制 ✓');});};})(data.reply);
-    acts.appendChild(cb);
-    loader.appendChild(acts);
+    acts.appendChild(cb);loader.appendChild(acts);
     h.push({role:'assistant',content:data.reply});
-    if(h.length>20) h=h.slice(-20);
+    if(h.length>20)h=h.slice(-20);
     document.getElementById('sb').disabled=false;
     chat.scrollTop=chat.scrollHeight;
   }).catch(function(){
@@ -401,8 +582,7 @@ function saveChat(){
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download='Khyen_AI_对话记录.txt';
-  a.click();
-  showToast('对话已保存！');
+  a.click();showToast('对话已保存！');
 }
 
 function clearChat(){
