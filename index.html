@@ -172,6 +172,16 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 }
 .l-btn-practice:hover{color:#f5ede0;border-color:rgba(245,237,224,0.5)}
 
+/* 藏文字符自动应用藏文字体 */
+@font-face {
+  font-family: 'TibetanAuto';
+  src: local('Noto Serif Tibetan');
+  unicode-range: U+0F00-0FFF;
+}
+.deity-desc, .med-card-text {
+  font-family: 'Noto Serif SC', 'Noto Serif Tibetan', serif;
+}
+
 /* ===== 静修页 ===== */
 #practice{display:none;position:fixed;inset:0;z-index:90;flex-direction:column;background:var(--cream);overflow-y:auto}
 .p-header{
@@ -503,7 +513,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
       <div class="deity-name-en">CHENREZIG</div>
     </div>
     <div class="deity-body">
-      <div class="deity-desc">观世音（藏语：ཐུགས་རྗེ་ཆེན་པོ།）是大慈悲的象征，西藏的守护本尊。达赖喇嘛被视为其化身。六字真言「唵嘛呢叭咪吽」是藏传佛教最广为人知的咒语，代表慈悲与解脱。</div>
+      <div class="deity-desc">观世音（藏语：<span style="font-family:'Noto Serif Tibetan',serif;font-size:15px;line-height:2.5">ཐུགས་རྗེ་ཆེན་པོ།</span>）是大慈悲的象征，西藏的守护本尊。达赖喇嘛被视为其化身。六字真言是藏传佛教最广为人知的咒语，代表慈悲与解脱。</div>
       <div class="deity-prayer-title">六字大明咒</div>
       <div class="deity-prayer">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
       <div class="deity-prayer-trans">唵 嘛 呢 叭 咪 吽 — 珍宝在莲花中，愿一切众生离苦得乐。</div>
