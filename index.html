@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KHYEN AI མཁྱེན།</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Noto+Serif+Tibetan:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -200,7 +202,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   font-size:40px;opacity:0.12;
 }
 .dw-label{font-size:10px;letter-spacing:4px;opacity:0.6;text-transform:uppercase;margin-bottom:12px}
-.dw-tibetan{font-family:'Noto Serif Tibetan',serif;font-size:16px;line-height:2.2;margin-bottom:10px;opacity:0.95}
+.dw-tibetan{font-family:'Noto Serif Tibetan',serif;font-size:17px;line-height:2.8;margin-bottom:10px;opacity:0.95;word-break:keep-all;unicode-bidi:plaintext}
 .dw-trans{font-size:13px;line-height:1.7;opacity:0.75;font-style:italic}
 
 /* 三个模块卡片 */
@@ -215,7 +217,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .p-card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(142,35,35,0.15);transform:translateY(-2px)}
 .p-card-icon{font-size:32px;margin-bottom:10px}
 .p-card-title{font-size:14px;font-weight:bold;color:var(--red);margin-bottom:4px}
-.p-card-bo{font-family:'Noto Serif Tibetan',serif;font-size:11px;color:var(--gold);margin-bottom:6px}
+.p-card-bo{font-family:'Noto Serif Tibetan',serif;font-size:13px;color:var(--gold);margin-bottom:6px;line-height:2.2;word-break:keep-all}
 .p-card-desc{font-size:11px;color:#888;line-height:1.5}
 
 /* 本尊页 */
@@ -230,7 +232,7 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
   background:linear-gradient(135deg,var(--red),#6b1a1a);
   padding:20px;color:#f7f3e8;
 }
-.deity-name-bo{font-family:'Noto Serif Tibetan',serif;font-size:22px;line-height:2;margin-bottom:2px}
+.deity-name-bo{font-family:'Noto Serif Tibetan',serif;font-size:24px;line-height:2.4;margin-bottom:2px;word-break:keep-all}
 .deity-name-zh{font-size:16px;font-weight:bold;opacity:0.9}
 .deity-name-en{font-size:12px;opacity:0.6;letter-spacing:2px;margin-top:2px}
 .deity-body{padding:20px}
@@ -238,13 +240,16 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .deity-prayer-title{font-size:12px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:10px}
 .deity-prayer{
   font-family:'Noto Serif Tibetan',serif;
-  font-size:15px;line-height:2.4;
+  font-size:17px;
+  line-height:2.8;
   color:var(--brown);
   background:rgba(142,35,35,0.04);
   border-left:3px solid var(--red);
-  padding:12px 16px;
+  padding:14px 16px;
   border-radius:0 8px 8px 0;
   margin-bottom:12px;
+  unicode-bidi:plaintext;
+  word-break:keep-all;
 }
 .deity-prayer-trans{font-size:12px;color:#888;line-height:1.7;font-style:italic;margin-bottom:16px}
 .deity-ask-btn{
