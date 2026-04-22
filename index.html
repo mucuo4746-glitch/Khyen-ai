@@ -155,14 +155,123 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 .l-btn:hover{color:var(--brown);border-color:var(--gold)}
 .l-btn:hover::before{transform:scaleX(1)}
 
-.l-mantra{
-  font-family:'Noto Serif Tibetan',serif;
-  font-size:13px;
-  color:rgba(201,168,76,0.3);
-  letter-spacing:4px;
+.l-btn-practice{
+  background:transparent;
+  color:rgba(245,237,224,0.7);
+  border:1px solid rgba(245,237,224,0.25);
+  padding:10px 52px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;
+  letter-spacing:6px;
+  cursor:pointer;
+  border-radius:2px;
+  margin-bottom:36px;
+  transition:all 0.4s;
 }
+.l-btn-practice:hover{color:#f5ede0;border-color:rgba(245,237,224,0.5)}
 
-/* ===== 对话页 ===== */
+/* ===== 静修页 ===== */
+#practice{display:none;position:fixed;inset:0;z-index:90;flex-direction:column;background:var(--cream);overflow-y:auto}
+.p-header{
+  background:var(--red);color:#f7f3e8;
+  padding:11px 18px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(142,35,35,0.3);
+  position:sticky;top:0;z-index:10;
+}
+.p-header-title{font-family:'Noto Serif Tibetan',serif;font-size:0.9em;line-height:1.8}
+.p-back{background:rgba(255,255,255,0.18);color:#f7f3e8;border:none;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer}
+.p-back:hover{background:rgba(255,255,255,0.3)}
+
+/* 每日语录 */
+.daily-wisdom{
+  margin:24px 16px 8px;
+  background:var(--red);
+  border-radius:16px;
+  padding:24px 20px;
+  color:#f7f3e8;
+  position:relative;
+  overflow:hidden;
+}
+.daily-wisdom::before{
+  content:'༄༅།';
+  position:absolute;right:16px;top:10px;
+  font-family:'Noto Serif Tibetan',serif;
+  font-size:40px;opacity:0.12;
+}
+.dw-label{font-size:10px;letter-spacing:4px;opacity:0.6;text-transform:uppercase;margin-bottom:12px}
+.dw-tibetan{font-family:'Noto Serif Tibetan',serif;font-size:16px;line-height:2.2;margin-bottom:10px;opacity:0.95}
+.dw-trans{font-size:13px;line-height:1.7;opacity:0.75;font-style:italic}
+
+/* 三个模块卡片 */
+.p-modules{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;padding-top:8px}
+.p-card{
+  background:white;border:1px solid rgba(142,35,35,0.12);
+  border-radius:16px;padding:20px 16px;
+  cursor:pointer;transition:all 0.25s;
+  text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.p-card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(142,35,35,0.15);transform:translateY(-2px)}
+.p-card-icon{font-size:32px;margin-bottom:10px}
+.p-card-title{font-size:14px;font-weight:bold;color:var(--red);margin-bottom:4px}
+.p-card-bo{font-family:'Noto Serif Tibetan',serif;font-size:11px;color:var(--gold);margin-bottom:6px}
+.p-card-desc{font-size:11px;color:#888;line-height:1.5}
+
+/* 本尊页 */
+#deity-page{display:none;position:fixed;inset:0;z-index:95;flex-direction:column;background:var(--cream);overflow-y:auto}
+.deity-card{
+  margin:12px 16px;background:white;
+  border:1px solid rgba(142,35,35,0.12);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.deity-card-header{
+  background:linear-gradient(135deg,var(--red),#6b1a1a);
+  padding:20px;color:#f7f3e8;
+}
+.deity-name-bo{font-family:'Noto Serif Tibetan',serif;font-size:22px;line-height:2;margin-bottom:2px}
+.deity-name-zh{font-size:16px;font-weight:bold;opacity:0.9}
+.deity-name-en{font-size:12px;opacity:0.6;letter-spacing:2px;margin-top:2px}
+.deity-body{padding:20px}
+.deity-desc{font-size:14px;line-height:1.8;color:#555;margin-bottom:16px}
+.deity-prayer-title{font-size:12px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:10px}
+.deity-prayer{
+  font-family:'Noto Serif Tibetan',serif;
+  font-size:15px;line-height:2.4;
+  color:var(--brown);
+  background:rgba(142,35,35,0.04);
+  border-left:3px solid var(--red);
+  padding:12px 16px;
+  border-radius:0 8px 8px 0;
+  margin-bottom:12px;
+}
+.deity-prayer-trans{font-size:12px;color:#888;line-height:1.7;font-style:italic;margin-bottom:16px}
+.deity-ask-btn{
+  width:100%;background:var(--red);color:#f7f3e8;
+  border:none;padding:12px;border-radius:10px;
+  font-size:14px;font-family:"Noto Serif SC",serif;
+  cursor:pointer;letter-spacing:1px;transition:all 0.2s;
+}
+.deity-ask-btn:hover{background:#a52828}
+
+/* 冥想引导页 */
+#meditation-page{display:none;position:fixed;inset:0;z-index:95;flex-direction:column;background:var(--cream);overflow-y:auto}
+.med-card{
+  margin:12px 16px;background:white;
+  border:1px solid rgba(142,35,35,0.12);
+  border-radius:16px;padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.med-card-title{font-size:15px;font-weight:bold;color:var(--red);margin-bottom:6px}
+.med-card-bo{font-family:'Noto Serif Tibetan',serif;font-size:12px;color:var(--gold);margin-bottom:10px}
+.med-card-text{font-size:13px;line-height:1.8;color:#555;margin-bottom:14px}
+.med-start-btn{
+  background:var(--red);color:#f7f3e8;
+  border:none;padding:10px 24px;border-radius:10px;
+  font-size:13px;cursor:pointer;transition:all 0.2s;
+}
+.med-start-btn:hover{background:#a52828}
 #app{display:none;flex-direction:column;height:100vh;background:var(--cream)}
 
 #header{
@@ -298,8 +407,136 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
       <div class="l-divider-line"></div>
     </div>
     <button class="l-btn" onclick="enterApp()">进入 &nbsp;·&nbsp; Enter</button>
+    <button class="l-btn-practice" onclick="enterPractice()">静修 &nbsp;·&nbsp; Practice</button>
     <div class="l-mantra">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
   </div>
+</div>
+
+<!-- 静修首页 -->
+<div id="practice">
+  <div class="p-header">
+    <div class="p-header-title">སྒོམ་གནས། 静修空间</div>
+    <button class="p-back" onclick="goHome()">🏠 首页</button>
+  </div>
+  <div class="daily-wisdom" id="daily-wisdom-box">
+    <div class="dw-label">今日智慧 · Daily Wisdom</div>
+    <div class="dw-tibetan" id="dw-tibetan"></div>
+    <div class="dw-trans" id="dw-trans"></div>
+  </div>
+  <div class="p-modules">
+    <div class="p-card" onclick="enterDeity()">
+      <div class="p-card-icon">🙏</div>
+      <div class="p-card-title">本尊祈请</div>
+      <div class="p-card-bo">ལྷ་གསོལ།</div>
+      <div class="p-card-desc">度母、文殊等本尊简介与祈请文</div>
+    </div>
+    <div class="p-card" onclick="enterMeditation()">
+      <div class="p-card-icon">🧘</div>
+      <div class="p-card-title">冥想引导</div>
+      <div class="p-card-bo">སྒོམ་པ།</div>
+      <div class="p-card-desc">藏传呼吸与慈悲心练习</div>
+    </div>
+    <div class="p-card" onclick="enterAppFromPractice()">
+      <div class="p-card-icon">☸️</div>
+      <div class="p-card-title">请教导师</div>
+      <div class="p-card-bo">མཁྱེན།</div>
+      <div class="p-card-desc">向 Khyen AI 询问修行问题</div>
+    </div>
+    <div class="p-card" onclick="showWisdomList()">
+      <div class="p-card-icon">📿</div>
+      <div class="p-card-title">智慧语录</div>
+      <div class="p-card-bo">གཏམ་དཔེ།</div>
+      <div class="p-card-desc">藏族谚语与经文精华</div>
+    </div>
+  </div>
+</div>
+
+<!-- 本尊祈请页 -->
+<div id="deity-page">
+  <div class="p-header">
+    <div class="p-header-title">ལྷ་གསོལ། 本尊祈请</div>
+    <button class="p-back" onclick="goBackToPractice()">← 返回</button>
+  </div>
+
+  <div class="deity-card">
+    <div class="deity-card-header">
+      <div class="deity-name-bo">སྒྲོལ་མ།</div>
+      <div class="deity-name-zh">度母 · Green Tara</div>
+      <div class="deity-name-en">SGROL MA</div>
+    </div>
+    <div class="deity-body">
+      <div class="deity-desc">度母是藏传佛教中最受崇敬的女性本尊，象征慈悲与救度。她从观世音菩萨的泪珠中化生，誓愿以女身度化众生。绿度母是二十一度母之根本，以迅疾救护著称，能消除一切恐惧与障碍。</div>
+      <div class="deity-prayer-title">根本祈请 · Root Prayer</div>
+      <div class="deity-prayer">ཨོཾ་རྗེ་བཙུན་མ་འཕགས་མ་སྒྲོལ་མ་ལ་ཕྱག་འཚལ་ལོ།
+ཕྱག་འཚལ་སྒྲོལ་མ་མྱུར་མ་དཔའ་མོ།།
+སྤྱན་ནི་སྐད་ཅིག་གློག་དང་འདྲ་མ།།</div>
+      <div class="deity-prayer-trans">顶礼圣救度母！顶礼速疾勇猛度母，目光如同刹那闪电。</div>
+      <button class="deity-ask-btn" onclick="askDeity('度母')">向导师深入了解度母 →</button>
+    </div>
+  </div>
+
+  <div class="deity-card">
+    <div class="deity-card-header">
+      <div class="deity-name-bo">འཇམ་དབྱངས།</div>
+      <div class="deity-name-zh">文殊菩萨 · Manjushri</div>
+      <div class="deity-name-en">JAM DBYANGS</div>
+    </div>
+    <div class="deity-body">
+      <div class="deity-desc">文殊菩萨是智慧的象征，手持宝剑斩断无明，手持经典代表般若智慧。藏传佛教中，宗喀巴大师被视为文殊的化身。修习文殊法门能开启智慧，利于闻思修行。</div>
+      <div class="deity-prayer-title">根本咒 · Root Mantra</div>
+      <div class="deity-prayer">ཨོཾ་ཨ་ར་པ་ཙ་ན་དྷིཿ
+འཇམ་དཔལ་གཞོན་ནུར་གྱུར་པ་ལ་ཕྱག་འཚལ་ལོ།།</div>
+      <div class="deity-prayer-trans">唵 阿 热 巴 扎 那 谛！顶礼童子相文殊师利。</div>
+      <button class="deity-ask-btn" onclick="askDeity('文殊菩萨')">向导师深入了解文殊 →</button>
+    </div>
+  </div>
+
+  <div class="deity-card">
+    <div class="deity-card-header">
+      <div class="deity-name-bo">སྤྱན་རས་གཟིགས།</div>
+      <div class="deity-name-zh">观世音菩萨 · Avalokiteshvara</div>
+      <div class="deity-name-en">CHENREZIG</div>
+    </div>
+    <div class="deity-body">
+      <div class="deity-desc">观世音（藏语：ཐུགས་རྗེ་ཆེན་པོ།）是大慈悲的象征，西藏的守护本尊。达赖喇嘛被视为其化身。六字真言「唵嘛呢叭咪吽」是藏传佛教最广为人知的咒语，代表慈悲与解脱。</div>
+      <div class="deity-prayer-title">六字大明咒</div>
+      <div class="deity-prayer">ཨོཾ་མ་ཎི་པདྨེ་ཧཱུྃ།</div>
+      <div class="deity-prayer-trans">唵 嘛 呢 叭 咪 吽 — 珍宝在莲花中，愿一切众生离苦得乐。</div>
+      <button class="deity-ask-btn" onclick="askDeity('观世音菩萨')">向导师深入了解观音 →</button>
+    </div>
+  </div>
+  <div style="height:24px"></div>
+</div>
+
+<!-- 冥想引导页 -->
+<div id="meditation-page">
+  <div class="p-header">
+    <div class="p-header-title">སྒོམ་པ། 冥想引导</div>
+    <button class="p-back" onclick="goBackToPractice()">← 返回</button>
+  </div>
+
+  <div class="med-card">
+    <div class="med-card-title">🌬️ 宝瓶气呼吸</div>
+    <div class="med-card-bo">རླུང་སྒོམ།</div>
+    <div class="med-card-text">源自藏传佛教的呼吸练习。吸气时观想清净白光从鼻孔进入，充满全身；屏息时光明遍布每个细胞；呼气时呼出所有执著与烦恼。适合每日晨起练习，净化身心。</div>
+    <button class="med-start-btn" onclick="askMeditation('宝瓶气呼吸练习')">开始引导 →</button>
+  </div>
+
+  <div class="med-card">
+    <div class="med-card-title">💛 慈悲心观想</div>
+    <div class="med-card-bo">བྱམས་སྙིང་རྗེ།</div>
+    <div class="med-card-text">藏传佛教核心修行之一。观想自己心间有一朵莲花，莲花上有明亮光点，代表自己本具的慈悲心。从光点向外扩展，愿自己、亲人、陌生人、乃至一切众生离苦得乐。</div>
+    <button class="med-start-btn" onclick="askMeditation('藏传慈悲心观想引导')">开始引导 →</button>
+  </div>
+
+  <div class="med-card">
+    <div class="med-card-title">☸️ 七支供修法</div>
+    <div class="med-card-bo">ཡན་ལག་བདུན་པ།</div>
+    <div class="med-card-text">藏传佛教日课的基础——七支供包括礼赞、供养、忏悔、随喜、请转法轮、请住世、回向。是积累福德、净化业障的完整修行结构。</div>
+    <button class="med-start-btn" onclick="askMeditation('七支供修法详解与引导')">了解详情 →</button>
+  </div>
+
+  <div style="height:24px"></div>
 </div>
 
 <!-- 对话页 -->
@@ -341,7 +578,87 @@ body{font-family:"Noto Serif SC",serif;background:var(--cream);color:var(--brown
 </div>
 
 <script>
-var chat=document.getElementById('chat');
+// ===== 智慧语录数据 =====
+var wisdoms=[
+  {bo:'དཀའ་བའི་བྲག་ལ་མ་ཐུག་ན། བདེ་བའི་སྤང་ལ་སླེབས་མི་ཐུབ།',trans:'不攀越艰难的山崖，便无法抵达幸福的草甸。'},
+  {bo:'ཀུན་དང་མཐུན་པ། མི་ཆོས་རྩ་བ་ཡིན།',trans:'与众和谐共处，是人道的根本。'},
+  {bo:'སྐར་མ་རེ་རེས་མདངས་རེ་བཀྲ། མཁས་པ་རེ་རེས་ཇུས་རེ་འདོན།',trans:'每颗星有其光芒，每位智者有其策略。'},
+  {bo:'དཀར་ཡོལ་ཆག་ཀྱང། རི་མོ་བློ་ངེས་ཡིན།',trans:'杯子虽破，花纹仍留在心中。'},
+  {bo:'སྐད་རིགས་མང་པོ་ཤེས་ན་བཟང་མོད་ཀྱང། རང་གི་ཕ་སྐད་བརྗེད་ན་ངོ་རེ་ཚ།',trans:'通晓多种语言固然好，但忘却母语实在可惜。'},
+  {bo:'དཀའ་ལས་སྔོན་ལ་རྒྱོབས། སྐྱིད་པོ་རྗེས་ལ་ཐོངས།',trans:'先努力付出，后享受安乐。'},
+  {bo:'ལུས་སྲོག་གཡོ་བ་ཆུ་ཡི་ཆུ་བུར་བཞིན།',trans:'身命无常，犹如水上泡沫。'},
+  {bo:'རང་ཉིད་སྲིད་མཚོར་ལྷུང་བ་ཇི་བཞིན་དུ། མར་གྱུར་འགྲོ་བ་ཀུན་ཀྱང་དེ་འདྲ་བར།',trans:'就像自己沉溺于轮回之海，一切如母众生亦复如是。'}
+];
+
+var todayWisdom=wisdoms[new Date().getDate()%wisdoms.length];
+
+function enterPractice(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('practice').style.display='flex';
+  document.getElementById('practice').style.flexDirection='column';
+  document.getElementById('dw-tibetan').innerText=todayWisdom.bo;
+  document.getElementById('dw-trans').innerText=todayWisdom.trans;
+}
+
+function enterDeity(){
+  document.getElementById('deity-page').style.display='flex';
+  document.getElementById('deity-page').style.flexDirection='column';
+}
+
+function enterMeditation(){
+  document.getElementById('meditation-page').style.display='flex';
+  document.getElementById('meditation-page').style.flexDirection='column';
+}
+
+function goBackToPractice(){
+  document.getElementById('deity-page').style.display='none';
+  document.getElementById('meditation-page').style.display='none';
+}
+
+function enterAppFromPractice(){
+  document.getElementById('practice').style.display='none';
+  document.getElementById('app').style.display='flex';
+  applyLang();
+  if(h.length===0){addMsg(LANGS[currentLang].welcome,'a');}
+}
+
+function showWisdomList(){
+  var msg='请分享几句藏族经典谚语和经文智慧语录，三语对照（藏文、中文、英文），要有文化深度。';
+  document.getElementById('practice').style.display='none';
+  document.getElementById('app').style.display='flex';
+  applyLang();
+  if(h.length===0){addMsg(LANGS[currentLang].welcome,'a');}
+  setTimeout(function(){
+    document.getElementById('t').value=msg;
+    send();
+  },300);
+}
+
+function askDeity(name){
+  document.getElementById('deity-page').style.display='none';
+  document.getElementById('practice').style.display='none';
+  document.getElementById('app').style.display='flex';
+  applyLang();
+  if(h.length===0){addMsg(LANGS[currentLang].welcome,'a');}
+  setTimeout(function(){
+    document.getElementById('t').value='请详细介绍'+name+'的文化意义、修行方法和祈请方式。';
+    send();
+  },300);
+}
+
+function askMeditation(topic){
+  document.getElementById('meditation-page').style.display='none';
+  document.getElementById('practice').style.display='none';
+  document.getElementById('app').style.display='flex';
+  applyLang();
+  if(h.length===0){addMsg(LANGS[currentLang].welcome,'a');}
+  setTimeout(function(){
+    document.getElementById('t').value='请给我做一个'+topic+'，语言温和，适合初学者，结合藏传佛教传统。';
+    send();
+  },300);
+}
+
+// ===== 原有函数 =====
 var h=[];
 var quickHidden=false;
 var currentImage=null;
@@ -489,6 +806,9 @@ function enterApp(){
 function goHome(){
   document.getElementById('landing').style.display='flex';
   document.getElementById('app').style.display='none';
+  document.getElementById('practice').style.display='none';
+  document.getElementById('deity-page').style.display='none';
+  document.getElementById('meditation-page').style.display='none';
 }
 
 function addMsg(msg,type){
